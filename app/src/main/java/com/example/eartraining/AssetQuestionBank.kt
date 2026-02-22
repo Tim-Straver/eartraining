@@ -5,6 +5,7 @@ import java.util.Locale
 
 object AssetQuestionBank {
     private val majorScaleOffsets = listOf(0, 2, 4, 5, 7, 9, 11)
+    private const val fileNameSeparatorPattern = "[_\\-]"
 
     private data class ProgressionTemplate(
         val id: String,
@@ -38,9 +39,11 @@ object AssetQuestionBank {
 
     fun maxProgressionDifficulty(): Int = progressionTemplates.maxOfOrNull { it.difficulty } ?: 1
 
+    fun maxChordTypeDifficulty(): Int = 3
+
     private fun buildProgressionQuestions(context: Context): List<TrainingQuestion> {
         val chordFiles = context.assets.list("chords").orEmpty()
-            .filter { it.contains('.') }
+            .filter { it.isNotBlank() }
             .sorted()
 
         if (chordFiles.isEmpty()) return emptyList()
@@ -94,7 +97,7 @@ object AssetQuestionBank {
         prompt: String
     ): List<TrainingQuestion> {
         val files = context.assets.list(folder).orEmpty()
-            .filter { it.contains('.') }
+            .filter { it.isNotBlank() }
             .sorted()
 
         if (files.isEmpty()) return emptyList()
@@ -125,7 +128,7 @@ object AssetQuestionBank {
 
     private fun buildChordTypeQuestions(context: Context): List<TrainingQuestion> {
         val files = context.assets.list("chords").orEmpty()
-            .filter { it.contains('.') }
+            .filter { it.isNotBlank() }
             .sorted()
 
         if (files.isEmpty()) return emptyList()
@@ -139,9 +142,17 @@ object AssetQuestionBank {
 
         if (qualityByFile.isEmpty()) return emptyList()
 
-        val labels = qualityByFile.values.distinct()
+        val labelsByDifficulty = qualityByFile.values
+            .distinct()
+            .groupBy { qualityDifficulty(it) }
 
         return qualityByFile.entries.map { (file, answer) ->
+            val difficulty = qualityDifficulty(answer)
+            val unlockedLabels = labelsByDifficulty
+                .filterKeys { it <= difficulty }
+                .values
+                .flatten()
+                .distinct()
             TrainingQuestion(
                 id = "asset_chords_${file}",
                 mode = TrainingMode.CHORD_TYPE,
@@ -149,8 +160,8 @@ object AssetQuestionBank {
                 audioResName = "",
                 audioAssetPath = "chords/$file",
                 audioAssetSequence = emptyList(),
-                difficulty = 1,
-                choices = buildChoices(answer, labels),
+                difficulty = difficulty,
+                choices = buildChoices(answer, unlockedLabels),
                 correctAnswer = answer
             )
         }
@@ -184,16 +195,18 @@ object AssetQuestionBank {
     }
 
     private fun parseChordFileName(name: String): Pair<String, String>? {
-        val regex = Regex("^([A-Ga-g](?:#|b)?)[_-]?(.+)$")
+        val regex = Regex("^([A-Ga-g](?:#|b)?)(.*)$")
         val match = regex.matchEntire(name.trim()) ?: return null
         val root = match.groupValues[1]
-        val quality = match.groupValues[2].trim()
-        if (quality.isEmpty()) return null
+        val quality = match.groupValues[2]
+            .trim()
+            .replaceFirst(Regex("^$fileNameSeparatorPattern"), "")
         return root to quality
     }
 
     private fun normalizeChordQuality(rawQuality: String): String? {
         return when (rawQuality.lowercase(Locale.ROOT)) {
+            "" -> "Major"
             "maj", "major" -> "Major"
             "min", "minor", "m" -> "Minor"
             "sus2" -> "Sus2"
@@ -201,6 +214,15 @@ object AssetQuestionBank {
             "dim", "diminished" -> "Diminished"
             "7", "7th", "dom7", "dominant7" -> "7th"
             else -> null
+        }
+    }
+
+    private fun qualityDifficulty(quality: String): Int {
+        return when (quality) {
+            "Major", "Minor" -> 1
+            "Sus2", "Sus4", "7th" -> 2
+            "Diminished" -> 3
+            else -> 1
         }
     }
 

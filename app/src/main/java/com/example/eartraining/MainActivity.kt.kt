@@ -103,7 +103,16 @@ class MainActivity : AppCompatActivity() {
                     StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
                 }
             }
-            TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
+            TrainingMode.CHORD_TYPE -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
+                if (assetQuestions.isNotEmpty()) {
+                    val unlockedDifficulty = chordTypeUnlockedDifficulty()
+                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
+                }
+            }
+            TrainingMode.NOTE -> {
                 val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
                 if (assetQuestions.isNotEmpty()) assetQuestions
                 else StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
@@ -317,6 +326,13 @@ class MainActivity : AppCompatActivity() {
         val totalCorrect = progressionStats.sumOf { st -> st.attempts - st.totalWrong }
         val baseLevel = 1 + (totalCorrect / 5)
         return baseLevel.coerceIn(1, AssetQuestionBank.maxProgressionDifficulty())
+    }
+
+    private fun chordTypeUnlockedDifficulty(): Int {
+        val chordTypeStats = stats.filterKeys { id -> id.startsWith("asset_chords_") }.values
+        val totalCorrect = chordTypeStats.sumOf { st -> st.attempts - st.totalWrong }
+        val baseLevel = 1 + (totalCorrect / 6)
+        return baseLevel.coerceIn(1, AssetQuestionBank.maxChordTypeDifficulty())
     }
 
     private fun progressionChordNames(question: TrainingQuestion): String {
