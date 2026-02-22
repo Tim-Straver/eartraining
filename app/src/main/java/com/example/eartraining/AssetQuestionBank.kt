@@ -14,6 +14,13 @@ object AssetQuestionBank {
         val difficulty: Int
     )
 
+    private data class IntervalTemplate(
+        val id: String,
+        val label: String,
+        val semitones: Int,
+        val difficulty: Int
+    )
+
     private val progressionTemplates = listOf(
         // Easy
         ProgressionTemplate("1_4_5_1", "I-IV-V-I", listOf(1, 4, 5, 1), difficulty = 1),
@@ -28,10 +35,28 @@ object AssetQuestionBank {
         ProgressionTemplate("1_6_2_5", "I-vi-ii-V", listOf(1, 6, 2, 5), difficulty = 3)
     )
 
+
+    private val intervalTemplates = listOf(
+        // Easy
+        IntervalTemplate("m2", "Minor 2nd", semitones = 1, difficulty = 1),
+        IntervalTemplate("M2", "Major 2nd", semitones = 2, difficulty = 1),
+        IntervalTemplate("M3", "Major 3rd", semitones = 4, difficulty = 1),
+
+        // Medium
+        IntervalTemplate("m3", "Minor 3rd", semitones = 3, difficulty = 2),
+        IntervalTemplate("P4", "Perfect 4th", semitones = 5, difficulty = 2),
+        IntervalTemplate("P5", "Perfect 5th", semitones = 7, difficulty = 2),
+
+        // Harder
+        IntervalTemplate("TT", "Tritone", semitones = 6, difficulty = 3),
+        IntervalTemplate("m7", "Minor 7th", semitones = 10, difficulty = 3),
+        IntervalTemplate("M7", "Major 7th", semitones = 11, difficulty = 3)
+    )
     fun questionsForMode(context: Context, mode: TrainingMode): List<TrainingQuestion> {
         return when (mode) {
             TrainingMode.CHORD_PROGRESSION -> buildProgressionQuestions(context)
             TrainingMode.CHORD_TYPE -> buildChordTypeQuestions(context)
+            TrainingMode.INTERVAL -> buildIntervalQuestions(context)
             TrainingMode.NOTE -> buildLabelQuestions(context, "notes", mode, "Identify the note")
             else -> emptyList()
         }
@@ -40,6 +65,8 @@ object AssetQuestionBank {
     fun maxProgressionDifficulty(): Int = progressionTemplates.maxOfOrNull { it.difficulty } ?: 1
 
     fun maxChordTypeDifficulty(): Int = 3
+
+    fun maxIntervalDifficulty(): Int = intervalTemplates.maxOfOrNull { it.difficulty } ?: 1
 
     private fun buildProgressionQuestions(context: Context): List<TrainingQuestion> {
         val chordFiles = context.assets.list("chords").orEmpty()
@@ -123,6 +150,52 @@ object AssetQuestionBank {
                 choices = buildChoices(answer, labels),
                 correctAnswer = answer
             )
+        }
+    }
+
+    private fun buildIntervalQuestions(context: Context): List<TrainingQuestion> {
+        val files = context.assets.list("notes").orEmpty()
+            .filter { it.isNotBlank() }
+            .sorted()
+
+        if (files.size < 3) return emptyList()
+
+        val noteByPitchClass = files.mapNotNull { file ->
+            val baseName = file.substringBeforeLast('.').trim()
+            val pitchClass = parsePitchClass(baseName) ?: return@mapNotNull null
+            pitchClass to file
+        }.toMap()
+
+        if (noteByPitchClass.size < 3) return emptyList()
+
+        val labelsByDifficulty = intervalTemplates
+            .groupBy { it.difficulty }
+            .mapValues { (_, templates) -> templates.map { it.label }.distinct() }
+
+        val roots = noteByPitchClass.keys.sorted()
+
+        return roots.flatMap { rootPc ->
+            intervalTemplates.mapNotNull { template ->
+                val upperPc = mod12(rootPc + template.semitones)
+                val rootFile = noteByPitchClass[rootPc] ?: return@mapNotNull null
+                val upperFile = noteByPitchClass[upperPc] ?: return@mapNotNull null
+                val unlockedLabels = labelsByDifficulty
+                    .filterKeys { it <= template.difficulty }
+                    .values
+                    .flatten()
+                    .distinct()
+                TrainingQuestion(
+                    id = "asset_interval_${rootPc}_${template.id}",
+                    mode = TrainingMode.INTERVAL,
+                    prompt = "Identify the interval",
+                    audioResName = "",
+                    audioAssetPath = null,
+                    audioAssetSequence = listOf("notes/$rootFile", "notes/$upperFile"),
+                    difficulty = template.difficulty,
+                    choices = buildChoices(template.label, unlockedLabels),
+                    correctAnswer = template.label
+                )
+            }
         }
     }
 

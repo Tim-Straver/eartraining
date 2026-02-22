@@ -112,6 +112,15 @@ class MainActivity : AppCompatActivity() {
                     StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
                 }
             }
+            TrainingMode.INTERVAL -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
+                if (assetQuestions.isNotEmpty()) {
+                    val unlockedDifficulty = intervalUnlockedDifficulty()
+                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
+                }
+            }
             TrainingMode.NOTE -> {
                 val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
                 if (assetQuestions.isNotEmpty()) assetQuestions
@@ -166,7 +175,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun TrainingMode.shouldAutoPlayOnQuestionLoad(): Boolean {
-        return this == TrainingMode.CHORD_PROGRESSION || this == TrainingMode.CHORD_TYPE
+        return this == TrainingMode.CHORD_PROGRESSION || this == TrainingMode.CHORD_TYPE || this == TrainingMode.INTERVAL
     }
 
     private fun normalizedChoices(question: TrainingQuestion): List<String> {
@@ -333,6 +342,13 @@ class MainActivity : AppCompatActivity() {
         val totalCorrect = chordTypeStats.sumOf { st -> st.attempts - st.totalWrong }
         val baseLevel = 1 + (totalCorrect / 6)
         return baseLevel.coerceIn(1, AssetQuestionBank.maxChordTypeDifficulty())
+    }
+
+    private fun intervalUnlockedDifficulty(): Int {
+        val intervalStats = stats.filterKeys { id -> id.startsWith("asset_interval_") }.values
+        val totalCorrect = intervalStats.sumOf { st -> st.attempts - st.totalWrong }
+        val baseLevel = 1 + (totalCorrect / 6)
+        return baseLevel.coerceIn(1, AssetQuestionBank.maxIntervalDifficulty())
     }
 
     private fun progressionChordNames(question: TrainingQuestion): String {
