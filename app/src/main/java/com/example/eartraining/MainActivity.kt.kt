@@ -190,7 +190,6 @@ class MainActivity : AppCompatActivity() {
             if (child is Button) {
                 child.isClickable = false
                 child.isFocusable = false
-                child.backgroundTintList = null
 
                 if (child.text.toString().trim() == correctAnswer.trim()) {
                     child.backgroundTintList = ColorStateList.valueOf(correctColor)
@@ -198,9 +197,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (isSelectedCorrect) {
-            selectedButton.backgroundTintList = ColorStateList.valueOf(correctColor)
-        } else {
+        if (!isSelectedCorrect) {
             selectedButton.backgroundTintList = ColorStateList.valueOf(wrongColor)
         }
     }
