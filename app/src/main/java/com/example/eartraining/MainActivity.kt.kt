@@ -59,8 +59,13 @@ class MainActivity : AppCompatActivity() {
     private fun loadNewQuestion() {
         val selectedMode = TrainingMode.fromDisplayName(modeSpinner.selectedItem?.toString().orEmpty())
         val questions = when (selectedMode) {
-            TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
-                AssetQuestionBank.questionsForMode(this, selectedMode)
+            TrainingMode.CHORD_PROGRESSION, TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, selectedMode)
+                if (assetQuestions.isNotEmpty()) {
+                    assetQuestions
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+                }
             }
             else -> StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
         }

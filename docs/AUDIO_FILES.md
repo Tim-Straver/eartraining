@@ -29,3 +29,10 @@ Je kunt simpel starten met alleen C-gerelateerde files en later uitbreiden:
 2. daarna extra roots toevoegen (`D`, `E`, `F#`, `Bb`, ...)
 
 Zo groeit de moeilijkheid vanzelf mee met je dataset.
+
+
+## Belangrijk voor jouw melding over `prog_...`
+
+- In **Chord Progressions** mode gebruikt de app nu ook `assets/chords/*` zodra daar bestanden staan.
+- Daardoor krijg je niet meer de melding over missende `prog_...` raw files als je met assets werkt.
+- Alleen als `assets/chords` leeg is, valt de app terug op de oude startervragen in `res/raw`.

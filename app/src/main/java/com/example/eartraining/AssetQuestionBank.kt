@@ -6,6 +6,12 @@ import java.util.Locale
 object AssetQuestionBank {
     fun questionsForMode(context: Context, mode: TrainingMode): List<TrainingQuestion> {
         return when (mode) {
+            TrainingMode.CHORD_PROGRESSION -> buildLabelQuestions(
+                context,
+                "chords",
+                mode,
+                "Identify the chord used in the progression"
+            )
             TrainingMode.CHORD_TYPE -> buildLabelQuestions(context, "chords", mode, "Identify the chord")
             TrainingMode.NOTE -> buildLabelQuestions(context, "notes", mode, "Identify the note")
             else -> emptyList()
