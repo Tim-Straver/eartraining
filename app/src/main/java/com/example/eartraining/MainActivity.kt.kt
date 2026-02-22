@@ -151,9 +151,13 @@ class MainActivity : AppCompatActivity() {
         val stat = stats[question.id] ?: QuestionStats()
         progressLabel.text = getString(R.string.progress_label, stat.attempts, stat.totalWrong, stat.wrongStreak)
 
-        if (currentMode == TrainingMode.CHORD_PROGRESSION) {
+        if (currentMode.shouldAutoPlayOnQuestionLoad()) {
             playCurrentAudio()
         }
+    }
+
+    private fun TrainingMode.shouldAutoPlayOnQuestionLoad(): Boolean {
+        return this == TrainingMode.CHORD_PROGRESSION || this == TrainingMode.CHORD_TYPE
     }
 
     private fun normalizedChoices(question: TrainingQuestion): List<String> {
