@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var currentMode: TrainingMode = TrainingMode.CHORD_PROGRESSION
     private var mediaPlayer: MediaPlayer? = null
     private var currentStreak: Int = 0
+    private val answerButtons: MutableList<Button> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -122,6 +123,7 @@ class MainActivity : AppCompatActivity() {
         questionLabel.text = question.prompt
         feedbackLabel.text = ""
         answerGroup.removeAllViews()
+        answerButtons.clear()
         nextQuestionButton.isEnabled = false
 
         question.choices.forEach { choice ->
@@ -130,6 +132,7 @@ class MainActivity : AppCompatActivity() {
                 textSize = 26f
                 minHeight = 160
                 isAllCaps = false
+                tag = choice
                 setOnClickListener {
                     if (!nextQuestionButton.isEnabled) {
                         submitAnswer(choice, this)
@@ -141,6 +144,7 @@ class MainActivity : AppCompatActivity() {
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { topMargin = 12 }
             answerGroup.addView(button, params)
+            answerButtons.add(button)
         }
 
         val stat = stats[question.id] ?: QuestionStats()
@@ -184,21 +188,16 @@ class MainActivity : AppCompatActivity() {
         val correctColor = getColor(android.R.color.holo_green_dark)
         val wrongColor = getColor(android.R.color.holo_red_dark)
 
-        for (index in 0 until answerGroup.childCount) {
-            val child = answerGroup.getChildAt(index)
-            if (child is Button) {
-                child.isClickable = false
-                child.isFocusable = false
-
-                if (child.text.toString().trim() == correctAnswer.trim()) {
-                    child.setBackgroundColor(correctColor)
-                }
-            }
+        answerButtons.forEach { button ->
+            button.isClickable = false
+            button.isFocusable = false
         }
 
         if (!isSelectedCorrect) {
             selectedButton.setBackgroundColor(wrongColor)
         }
+
+        answerButtons.firstOrNull { (it.tag as? String) == correctAnswer }?.setBackgroundColor(correctColor)
     }
 
     private fun updateStreakLabel() {
