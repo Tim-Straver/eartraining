@@ -1,5 +1,6 @@
 package com.example.eartraining
 
+import android.content.res.ColorStateList
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Button
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var feedbackLabel: TextView
     private lateinit var progressLabel: TextView
     private lateinit var streakLabel: TextView
+    private lateinit var nextQuestionButton: Button
 
     private var currentQuestion: TrainingQuestion? = null
     private var currentMode: TrainingMode = TrainingMode.CHORD_PROGRESSION
@@ -44,13 +46,18 @@ class MainActivity : AppCompatActivity() {
         feedbackLabel = findViewById(R.id.feedbackLabel)
         progressLabel = findViewById(R.id.progressLabel)
         streakLabel = findViewById(R.id.streakLabel)
+        nextQuestionButton = findViewById(R.id.nextQuestionButton)
 
         findViewById<Button>(R.id.modeChordProgressionButton).setOnClickListener { startMode(TrainingMode.CHORD_PROGRESSION) }
         findViewById<Button>(R.id.modeIntervalButton).setOnClickListener { startMode(TrainingMode.INTERVAL) }
         findViewById<Button>(R.id.modeChordTypeButton).setOnClickListener { startMode(TrainingMode.CHORD_TYPE) }
         findViewById<Button>(R.id.backToModesButton).setOnClickListener { showHome() }
         findViewById<Button>(R.id.playAudioButton).setOnClickListener { playCurrentAudio() }
-        findViewById<Button>(R.id.nextQuestionButton).setOnClickListener { loadNewQuestion() }
+        nextQuestionButton.setOnClickListener {
+            if (nextQuestionButton.isEnabled) {
+                loadNewQuestion()
+            }
+        }
 
         showHome()
     }
@@ -60,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         trainingContainer.visibility = LinearLayout.GONE
         currentQuestion = null
         feedbackLabel.text = ""
+        nextQuestionButton.isEnabled = false
     }
 
     private fun startMode(mode: TrainingMode) {
@@ -94,6 +102,7 @@ class MainActivity : AppCompatActivity() {
         if (questions.isEmpty()) {
             questionLabel.text = getString(R.string.no_questions)
             answerGroup.removeAllViews()
+            nextQuestionButton.isEnabled = false
             return
         }
 
@@ -102,6 +111,7 @@ class MainActivity : AppCompatActivity() {
         questionLabel.text = question.prompt
         feedbackLabel.text = ""
         answerGroup.removeAllViews()
+        nextQuestionButton.isEnabled = false
 
         question.choices.forEach { choice ->
             val button = Button(this).apply {
@@ -109,7 +119,11 @@ class MainActivity : AppCompatActivity() {
                 textSize = 26f
                 minHeight = 160
                 isAllCaps = false
-                setOnClickListener { submitAnswer(choice, this) }
+                setOnClickListener {
+                    if (!nextQuestionButton.isEnabled) {
+                        submitAnswer(choice, this)
+                    }
+                }
             }
             val params = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -120,6 +134,10 @@ class MainActivity : AppCompatActivity() {
 
         val stat = stats[question.id] ?: QuestionStats()
         progressLabel.text = getString(R.string.progress_label, stat.attempts, stat.totalWrong, stat.wrongStreak)
+
+        if (currentMode == TrainingMode.CHORD_PROGRESSION) {
+            playCurrentAudio()
+        }
     }
 
     private fun submitAnswer(selectedAnswer: String, selectedButton: Button) {
@@ -147,6 +165,8 @@ class MainActivity : AppCompatActivity() {
             newStats.totalWrong,
             newStats.wrongStreak
         )
+
+        nextQuestionButton.isEnabled = true
     }
 
     private fun highlightAnswers(selectedButton: Button, correctAnswer: String, isSelectedCorrect: Boolean) {
@@ -158,13 +178,15 @@ class MainActivity : AppCompatActivity() {
             if (child is Button) {
                 child.isEnabled = false
                 if (child.text.toString() == correctAnswer) {
-                    child.setBackgroundColor(correctColor)
+                    child.backgroundTintList = ColorStateList.valueOf(correctColor)
                 }
             }
         }
 
-        if (!isSelectedCorrect) {
-            selectedButton.setBackgroundColor(wrongColor)
+        if (isSelectedCorrect) {
+            selectedButton.backgroundTintList = ColorStateList.valueOf(correctColor)
+        } else {
+            selectedButton.backgroundTintList = ColorStateList.valueOf(wrongColor)
         }
     }
 
