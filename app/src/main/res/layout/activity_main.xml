@@ -59,19 +59,25 @@
             android:id="@+id/trainingTopBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/bg_surface"
             android:gravity="center_vertical"
-            android:minHeight="64dp"
+            android:minHeight="72dp"
             android:orientation="horizontal"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp">
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp">
 
             <Button
                 android:id="@+id/backToModesButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="110dp"
+                android:backgroundTint="@color/accent_variant"
+                android:minWidth="128dp"
                 android:minHeight="56dp"
                 android:text="@string/back"
+                android:textAllCaps="false"
+                android:textColor="@color/on_accent"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 

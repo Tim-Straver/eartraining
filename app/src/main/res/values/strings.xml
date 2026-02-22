@@ -15,5 +15,5 @@
     <string name="no_questions">No questions available for this mode.</string>
     <string name="streak_label">Streak: %1$d</string>
     <string name="streak_label_default">Streak: 0</string>
-    <string name="back">← Home</string>
+    <string name="back">⬅ Back to Home</string>
 </resources>
