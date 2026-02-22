@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.OnBackPressedCallback
@@ -234,6 +235,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateStreakLabel() {
+        val shouldShowStreak = currentStreak > 1
+        streakFireLabel.visibility = if (shouldShowStreak) View.VISIBLE else View.GONE
+        streakLabel.visibility = if (shouldShowStreak) View.VISIBLE else View.GONE
         streakLabel.text = "${currentStreak} streak"
         updateStreakWiggle()
     }
@@ -242,17 +246,21 @@ class MainActivity : AppCompatActivity() {
         streakWiggleAnimator?.cancel()
         streakFireLabel.rotation = 0f
 
-        if (currentStreak <= 0) return
+        if (currentStreak <= 1) return
 
         val clampedStreak = min(currentStreak, 30)
         val amplitudeDegrees = (2f + clampedStreak * 0.3f).coerceAtMost(12f)
         val durationMs = (520L - clampedStreak * 12L).coerceAtLeast(160L)
 
-        streakWiggleAnimator = ObjectAnimator.ofFloat(streakFireLabel, "rotation", -amplitudeDegrees, amplitudeDegrees).apply {
-            duration = durationMs
-            repeatMode = ValueAnimator.REVERSE
-            repeatCount = ValueAnimator.INFINITE
-            start()
+        streakFireLabel.post {
+            streakFireLabel.pivotX = streakFireLabel.width / 2f
+            streakFireLabel.pivotY = streakFireLabel.height.toFloat()
+            streakWiggleAnimator = ObjectAnimator.ofFloat(streakFireLabel, "rotation", -amplitudeDegrees, amplitudeDegrees).apply {
+                duration = durationMs
+                repeatMode = ValueAnimator.REVERSE
+                repeatCount = ValueAnimator.INFINITE
+                start()
+            }
         }
     }
 

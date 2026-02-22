@@ -125,7 +125,8 @@
                 android:textAlignment="center"
                 android:textColor="@android:color/white"
                 android:textSize="42sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/streakLabel"
@@ -136,7 +137,8 @@
                 android:textAlignment="center"
                 android:textColor="@android:color/white"
                 android:textSize="30sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
         </LinearLayout>
 
         <ScrollView
