@@ -2,99 +2,133 @@ package com.example.eartraining
 
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.Spinner
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 
 class MainActivity : AppCompatActivity() {
     private val trainer = AdaptiveTrainer()
     private lateinit var statsStore: StatsStore
     private lateinit var stats: MutableMap<String, QuestionStats>
 
-    private lateinit var modeSpinner: Spinner
+    private lateinit var homeContainer: LinearLayout
+    private lateinit var trainingContainer: LinearLayout
+    private lateinit var modeTitleLabel: TextView
     private lateinit var questionLabel: TextView
-    private lateinit var answerGroup: RadioGroup
+    private lateinit var answerGroup: LinearLayout
     private lateinit var feedbackLabel: TextView
     private lateinit var progressLabel: TextView
+    private lateinit var streakLabel: TextView
 
     private var currentQuestion: TrainingQuestion? = null
+    private var currentMode: TrainingMode = TrainingMode.CHORD_PROGRESSION
     private var mediaPlayer: MediaPlayer? = null
+    private var currentStreak: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         statsStore = StatsStore(this)
         stats = statsStore.load()
 
-        modeSpinner = findViewById(R.id.modeSpinner)
+        homeContainer = findViewById(R.id.homeContainer)
+        trainingContainer = findViewById(R.id.trainingContainer)
+        modeTitleLabel = findViewById(R.id.modeTitleLabel)
         questionLabel = findViewById(R.id.questionLabel)
         answerGroup = findViewById(R.id.answerGroup)
         feedbackLabel = findViewById(R.id.feedbackLabel)
         progressLabel = findViewById(R.id.progressLabel)
+        streakLabel = findViewById(R.id.streakLabel)
 
-        val modeNames = TrainingMode.entries.map { it.displayName }
-        modeSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, modeNames)
-
-        findViewById<Button>(R.id.newQuestionButton).setOnClickListener {
-            loadNewQuestion()
+        findViewById<Button>(R.id.modeChordProgressionButton).setOnClickListener {
+            startMode(TrainingMode.CHORD_PROGRESSION)
         }
-
+        findViewById<Button>(R.id.modeIntervalButton).setOnClickListener {
+            startMode(TrainingMode.INTERVAL)
+        }
+        findViewById<Button>(R.id.modeChordTypeButton).setOnClickListener {
+            startMode(TrainingMode.CHORD_TYPE)
+        }
+        findViewById<Button>(R.id.backToModesButton).setOnClickListener {
+            showHome()
+        }
         findViewById<Button>(R.id.playAudioButton).setOnClickListener {
             playCurrentAudio()
         }
-
-        findViewById<Button>(R.id.submitButton).setOnClickListener {
-            submitAnswer()
+        findViewById<Button>(R.id.nextQuestionButton).setOnClickListener {
+            loadNewQuestion()
         }
 
+        showHome()
+    }
+
+    private fun showHome() {
+        homeContainer.visibility = LinearLayout.VISIBLE
+        trainingContainer.visibility = LinearLayout.GONE
+        currentQuestion = null
+        feedbackLabel.text = ""
+    }
+
+    private fun startMode(mode: TrainingMode) {
+        currentMode = mode
+        modeTitleLabel.text = mode.displayName
+        currentStreak = 0
+        updateStreakLabel()
+        homeContainer.visibility = LinearLayout.GONE
+        trainingContainer.visibility = LinearLayout.VISIBLE
         loadNewQuestion()
     }
 
     private fun loadNewQuestion() {
-        val selectedMode = TrainingMode.fromDisplayName(modeSpinner.selectedItem?.toString().orEmpty())
-        val questions = when (selectedMode) {
+        val questions = when (currentMode) {
             TrainingMode.CHORD_PROGRESSION -> {
-                val assetQuestions = AssetQuestionBank.questionsForMode(this, selectedMode)
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
                 if (assetQuestions.isNotEmpty()) {
                     val unlockedDifficulty = progressionUnlockedDifficulty()
                     assetQuestions.filter { it.difficulty <= unlockedDifficulty }
                 } else {
-                    StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+                    StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
                 }
             }
             TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
-                val assetQuestions = AssetQuestionBank.questionsForMode(this, selectedMode)
-                if (assetQuestions.isNotEmpty()) {
-                    assetQuestions
-                } else {
-                    StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
-                }
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
+                if (assetQuestions.isNotEmpty()) assetQuestions
+                else StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
             }
-            else -> StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+            else -> StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
         }
+
         if (questions.isEmpty()) {
             questionLabel.text = getString(R.string.no_questions)
+            answerGroup.removeAllViews()
             return
         }
 
         currentQuestion = trainer.pickQuestion(questions, stats)
         val question = currentQuestion ?: return
         questionLabel.text = question.prompt
+        feedbackLabel.text = ""
         answerGroup.removeAllViews()
 
-        question.choices.forEachIndexed { index, choice ->
-            val button = RadioButton(this).apply {
-                id = 1000 + index
+        question.choices.forEach { choice ->
+            val button = Button(this).apply {
                 text = choice
-                textSize = 18f
+                textSize = 22f
+                minHeight = 120
+                setOnClickListener { submitAnswer(choice) }
             }
-            answerGroup.addView(button)
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = 8
+            }
+            answerGroup.addView(button, params)
         }
 
         val stat = stats[question.id] ?: QuestionStats()
@@ -104,6 +138,36 @@ class MainActivity : AppCompatActivity() {
             stat.totalWrong,
             stat.wrongStreak
         )
+    }
+
+    private fun submitAnswer(selectedAnswer: String) {
+        val question = currentQuestion ?: return
+        val correct = selectedAnswer == question.correctAnswer
+        val newStats = trainer.updateStats(stats[question.id], correct)
+        stats[question.id] = newStats
+        statsStore.save(stats)
+
+        currentStreak = if (correct) currentStreak + 1 else 0
+        updateStreakLabel()
+
+        val shownAnswer = answerDisplay(question)
+        feedbackLabel.text = if (correct) {
+            "${getString(R.string.correct)} $shownAnswer"
+        } else {
+            getString(R.string.incorrect, shownAnswer)
+        }
+
+        progressLabel.text = getString(
+            R.string.progress_label,
+            newStats.attempts,
+            newStats.totalWrong,
+            newStats.wrongStreak
+        )
+
+    }
+
+    private fun updateStreakLabel() {
+        streakLabel.text = getString(R.string.streak_label, currentStreak)
     }
 
     private fun playCurrentAudio() {
@@ -150,7 +214,6 @@ class MainActivity : AppCompatActivity() {
             start()
         }
     }
-
 
     private fun playAssetSequence(assetPaths: List<String>) {
         val queue = ArrayDeque(assetPaths)
@@ -206,40 +269,7 @@ class MainActivity : AppCompatActivity() {
     private fun answerDisplay(question: TrainingQuestion): String {
         if (question.mode != TrainingMode.CHORD_PROGRESSION) return question.correctAnswer
         val chords = progressionChordNames(question)
-        return if (chords.isBlank()) {
-            question.correctAnswer
-        } else {
-            "${question.correctAnswer} ($chords)"
-        }
-    }
-
-    private fun submitAnswer() {
-        val question = currentQuestion ?: return
-        val selectedId = answerGroup.checkedRadioButtonId
-        if (selectedId == -1) {
-            Toast.makeText(this, R.string.select_answer, Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val selectedAnswer = findViewById<RadioButton>(selectedId).text.toString()
-        val correct = selectedAnswer == question.correctAnswer
-        val newStats = trainer.updateStats(stats[question.id], correct)
-        stats[question.id] = newStats
-        statsStore.save(stats)
-
-        val shownAnswer = answerDisplay(question)
-        feedbackLabel.text = if (correct) {
-            "${getString(R.string.correct)} $shownAnswer"
-        } else {
-            getString(R.string.incorrect, shownAnswer)
-        }
-
-        progressLabel.text = getString(
-            R.string.progress_label,
-            newStats.attempts,
-            newStats.totalWrong,
-            newStats.wrongStreak
-        )
+        return if (chords.isBlank()) question.correctAnswer else "${question.correctAnswer} ($chords)"
     }
 
     override fun onDestroy() {
