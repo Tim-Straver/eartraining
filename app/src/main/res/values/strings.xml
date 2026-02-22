@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Ear Training</string>
-    <string name="mode_label">Choose training mode</string>
+    <string name="mode_label">Pick your workout</string>
     <string name="mode_chord_progression">Chord Progression</string>
-    <string name="mode_interval">Interval</string>
+    <string name="mode_interval">Interval Training</string>
     <string name="mode_chord_type">Chord Type</string>
     <string name="play_audio">▶</string>
-    <string name="next_question">Next Question</string>
+    <string name="next_question">Next Challenge</string>
     <string name="correct">✅ Correct!</string>
     <string name="incorrect">❌ Not quite. Correct answer: %1$s</string>
     <string name="missing_audio">Missing raw audio file: %1$s</string>
@@ -14,5 +14,5 @@
     <string name="no_questions">No questions available for this mode.</string>
     <string name="streak_fire">🔥</string>
     <string name="streak_label_default">0 streak</string>
-    <string name="back">⬅ Back to Home</string>
+    <string name="back">Back</string>
 </resources>

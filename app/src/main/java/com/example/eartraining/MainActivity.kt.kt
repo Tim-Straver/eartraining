@@ -13,6 +13,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
 import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
@@ -56,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.modeChordProgressionButton).setOnClickListener { startMode(TrainingMode.CHORD_PROGRESSION) }
         findViewById<Button>(R.id.modeIntervalButton).setOnClickListener { startMode(TrainingMode.INTERVAL) }
         findViewById<Button>(R.id.modeChordTypeButton).setOnClickListener { startMode(TrainingMode.CHORD_TYPE) }
+        findViewById<Button>(R.id.backHomeButton).setOnClickListener { showHome() }
         findViewById<Button>(R.id.playAudioButton).setOnClickListener { playCurrentAudio() }
         nextQuestionButton.setOnClickListener {
             if (nextQuestionButton.isEnabled) {
@@ -149,10 +151,13 @@ class MainActivity : AppCompatActivity() {
         displayedChoices.forEach { choice ->
             val button = Button(this).apply {
                 text = choice
-                textSize = 26f
-                minHeight = 160
+                textSize = 20f
+                minHeight = 132
                 isAllCaps = false
                 tag = choice
+                background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_answer_button)
+                setTextColor(getColor(R.color.on_dark))
+                setPadding(32, 26, 32, 26)
                 setOnClickListener {
                     if (!nextQuestionButton.isEnabled) {
                         submitAnswer(choice, this)
@@ -218,8 +223,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun highlightAnswers(selectedButton: Button, correctAnswer: String, isSelectedCorrect: Boolean) {
-        val correctColor = getColor(android.R.color.holo_green_dark)
-        val wrongColor = getColor(android.R.color.holo_red_dark)
+        val correctColor = getColor(R.color.correct)
+        val wrongColor = getColor(R.color.wrong)
 
         answerButtons.forEach { button ->
             button.isClickable = false

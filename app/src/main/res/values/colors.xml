@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_dark">#111827</color>
-    <color name="bg_surface">#1F2937</color>
-    <color name="accent">#8B5CF6</color>
-    <color name="accent_variant">#7C3AED</color>
-    <color name="on_dark">#F9FAFB</color>
+    <color name="bg_dark">#1E2037</color>
+    <color name="bg_surface">#282B45</color>
+    <color name="bg_surface_soft">#303454</color>
+    <color name="accent">#8B7CFF</color>
+    <color name="accent_variant">#6B5DF5</color>
+    <color name="mint">#74E8C8</color>
+    <color name="peach">#FFAA8A</color>
+    <color name="butter">#FFD96E</color>
+    <color name="on_dark">#F8F9FF</color>
+    <color name="on_dark_muted">#B3B7D7</color>
     <color name="on_accent">#FFFFFF</color>
+    <color name="correct">#43C778</color>
+    <color name="wrong">#E35D6A</color>
 </resources>
