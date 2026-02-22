@@ -7,8 +7,9 @@
     <string name="correct">✅ Correct!</string>
     <string name="incorrect">❌ Not quite. Correct answer: %1$s</string>
     <string name="missing_audio">Missing raw audio file: %1$s</string>
+    <string name="missing_asset_audio">Missing asset audio file: %1$s</string>
     <string name="select_answer">Select an answer first.</string>
     <string name="progress_label">Attempts: %1$d • Total wrong: %2$d • Current wrong streak: %3$d</string>
-    <string name="audio_help_text">Add your own files in app/src/main/res/raw and match the names used by questions (e.g. prog_1_5_6_4.wav, int_third.wav, chord_minor.wav).</string>
+    <string name="audio_help_text">Add your own files in app/src/main/assets/chords and app/src/main/assets/notes (e.g. chords/C.wav, chords/Cm.wav, notes/C.wav).</string>
     <string name="no_questions">No questions available for this mode.</string>
 </resources>

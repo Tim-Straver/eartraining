@@ -58,7 +58,26 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadNewQuestion() {
         val selectedMode = TrainingMode.fromDisplayName(modeSpinner.selectedItem?.toString().orEmpty())
-        val questions = StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+        val questions = when (selectedMode) {
+            TrainingMode.CHORD_PROGRESSION -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, selectedMode)
+                if (assetQuestions.isNotEmpty()) {
+                    val unlockedDifficulty = progressionUnlockedDifficulty()
+                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+                }
+            }
+            TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, selectedMode)
+                if (assetQuestions.isNotEmpty()) {
+                    assetQuestions
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+                }
+            }
+            else -> StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+        }
         if (questions.isEmpty()) {
             questionLabel.text = getString(R.string.no_questions)
             return
@@ -67,7 +86,6 @@ class MainActivity : AppCompatActivity() {
         currentQuestion = trainer.pickQuestion(questions, stats)
         val question = currentQuestion ?: return
         questionLabel.text = question.prompt
-        feedbackLabel.text = ""
         answerGroup.removeAllViews()
 
         question.choices.forEachIndexed { index, choice ->
@@ -90,6 +108,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun playCurrentAudio() {
         val question = currentQuestion ?: return
+        if (question.audioAssetSequence.isNotEmpty()) {
+            playAssetSequence(question.audioAssetSequence)
+            return
+        }
+        if (question.audioAssetPath != null) {
+            playAssetAudio(question.audioAssetPath)
+            return
+        }
+
         val resId = resources.getIdentifier(question.audioResName, "raw", packageName)
         if (resId == 0) {
             Toast.makeText(
@@ -106,6 +133,86 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer?.start()
     }
 
+    private fun playAssetAudio(assetPath: String) {
+        val afd = try {
+            assets.openFd(assetPath)
+        } catch (_: Exception) {
+            Toast.makeText(this, getString(R.string.missing_asset_audio, assetPath), Toast.LENGTH_LONG).show()
+            null
+        } ?: return
+
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            afd.close()
+            prepare()
+            setOnCompletionListener { mp -> mp.release(); mediaPlayer = null }
+            start()
+        }
+    }
+
+
+    private fun playAssetSequence(assetPaths: List<String>) {
+        val queue = ArrayDeque(assetPaths)
+
+        fun playNext() {
+            if (queue.isEmpty()) {
+                mediaPlayer?.release()
+                mediaPlayer = null
+                return
+            }
+            val nextPath = queue.removeFirst()
+
+            val afd = try {
+                assets.openFd(nextPath)
+            } catch (_: Exception) {
+                Toast.makeText(this, getString(R.string.missing_asset_audio, nextPath), Toast.LENGTH_LONG).show()
+                null
+            } ?: return
+
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
+                prepare()
+                setOnCompletionListener {
+                    it.release()
+                    mediaPlayer = null
+                    playNext()
+                }
+                start()
+            }
+        }
+
+        playNext()
+    }
+
+    private fun progressionUnlockedDifficulty(): Int {
+        val progressionStats = stats.filterKeys { id -> id.startsWith("asset_prog_") }.values
+        val totalCorrect = progressionStats.sumOf { st -> st.attempts - st.totalWrong }
+        val baseLevel = 1 + (totalCorrect / 5)
+        return baseLevel.coerceIn(1, AssetQuestionBank.maxProgressionDifficulty())
+    }
+
+    private fun progressionChordNames(question: TrainingQuestion): String {
+        if (question.mode != TrainingMode.CHORD_PROGRESSION || question.audioAssetSequence.isEmpty()) return ""
+        return question.audioAssetSequence
+            .map { assetPath ->
+                assetPath.substringAfterLast('/').substringBeforeLast('.')
+            }
+            .joinToString("-")
+    }
+
+    private fun answerDisplay(question: TrainingQuestion): String {
+        if (question.mode != TrainingMode.CHORD_PROGRESSION) return question.correctAnswer
+        val chords = progressionChordNames(question)
+        return if (chords.isBlank()) {
+            question.correctAnswer
+        } else {
+            "${question.correctAnswer} ($chords)"
+        }
+    }
+
     private fun submitAnswer() {
         val question = currentQuestion ?: return
         val selectedId = answerGroup.checkedRadioButtonId
@@ -120,10 +227,11 @@ class MainActivity : AppCompatActivity() {
         stats[question.id] = newStats
         statsStore.save(stats)
 
+        val shownAnswer = answerDisplay(question)
         feedbackLabel.text = if (correct) {
-            getString(R.string.correct)
+            "${getString(R.string.correct)} $shownAnswer"
         } else {
-            getString(R.string.incorrect, question.correctAnswer)
+            getString(R.string.incorrect, shownAnswer)
         }
 
         progressLabel.text = getString(
