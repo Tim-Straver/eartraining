@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var modeTitleLabel: TextView
     private lateinit var questionLabel: TextView
     private lateinit var answerGroup: LinearLayout
-    private lateinit var feedbackLabel: TextView
     private lateinit var streakFireLabel: TextView
     private lateinit var streakLabel: TextView
     private lateinit var nextQuestionButton: Button
@@ -49,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         modeTitleLabel = findViewById(R.id.modeTitleLabel)
         questionLabel = findViewById(R.id.questionLabel)
         answerGroup = findViewById(R.id.answerGroup)
-        feedbackLabel = findViewById(R.id.feedbackLabel)
         streakFireLabel = findViewById(R.id.streakFireLabel)
         streakLabel = findViewById(R.id.streakLabel)
         nextQuestionButton = findViewById(R.id.nextQuestionButton)
@@ -82,7 +80,6 @@ class MainActivity : AppCompatActivity() {
         homeContainer.visibility = LinearLayout.VISIBLE
         trainingContainer.visibility = LinearLayout.GONE
         currentQuestion = null
-        feedbackLabel.text = ""
         nextQuestionButton.isEnabled = false
     }
 
@@ -143,7 +140,6 @@ class MainActivity : AppCompatActivity() {
         currentQuestion = trainer.pickQuestion(questions, stats)
         val question = currentQuestion ?: return
         questionLabel.text = question.prompt
-        feedbackLabel.text = ""
         answerGroup.removeAllViews()
         answerButtons.clear()
         nextQuestionButton.isEnabled = false
@@ -216,13 +212,6 @@ class MainActivity : AppCompatActivity() {
         updateStreakLabel()
 
         highlightAnswers(selectedButton, question.correctAnswer, correct)
-
-        val shownAnswer = answerDisplay(question)
-        feedbackLabel.text = if (correct) {
-            "${getString(R.string.correct)} $shownAnswer"
-        } else {
-            getString(R.string.incorrect, shownAnswer)
-        }
 
         nextQuestionButton.isEnabled = true
     }
@@ -362,19 +351,6 @@ class MainActivity : AppCompatActivity() {
         val totalCorrect = intervalStats.sumOf { st -> st.attempts - st.totalWrong }
         val baseLevel = 1 + (totalCorrect / 6)
         return baseLevel.coerceIn(1, AssetQuestionBank.maxIntervalDifficulty())
-    }
-
-    private fun progressionChordNames(question: TrainingQuestion): String {
-        if (question.mode != TrainingMode.CHORD_PROGRESSION || question.audioAssetSequence.isEmpty()) return ""
-        return question.audioAssetSequence
-            .map { assetPath -> assetPath.substringAfterLast('/').substringBeforeLast('.') }
-            .joinToString("-")
-    }
-
-    private fun answerDisplay(question: TrainingQuestion): String {
-        if (question.mode != TrainingMode.CHORD_PROGRESSION) return question.correctAnswer
-        val chords = progressionChordNames(question)
-        return if (chords.isBlank()) question.correctAnswer else "${question.correctAnswer} ($chords)"
     }
 
     override fun onDestroy() {
