@@ -1,5 +1,6 @@
 package com.example.eartraining
 
+import android.content.res.ColorStateList
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Button
@@ -126,7 +127,8 @@ class MainActivity : AppCompatActivity() {
         answerButtons.clear()
         nextQuestionButton.isEnabled = false
 
-        question.choices.forEach { choice ->
+        val displayedChoices = normalizedChoices(question)
+        displayedChoices.forEach { choice ->
             val button = Button(this).apply {
                 text = choice
                 textSize = 26f
@@ -153,6 +155,32 @@ class MainActivity : AppCompatActivity() {
         if (currentMode == TrainingMode.CHORD_PROGRESSION) {
             playCurrentAudio()
         }
+    }
+
+    private fun normalizedChoices(question: TrainingQuestion): List<String> {
+        val correct = question.correctAnswer
+        val candidates = mutableListOf<String>()
+        candidates.addAll(question.choices.filter { it != correct })
+
+        if (candidates.size < 2) {
+            val fallback = StarterQuestionBank.allQuestions
+                .filter { it.mode == question.mode }
+                .flatMap { it.choices }
+                .distinct()
+                .filter { it != correct && !candidates.contains(it) }
+            candidates.addAll(fallback)
+        }
+
+        if (candidates.size < 2) {
+            val globalFallback = StarterQuestionBank.allQuestions
+                .flatMap { it.choices }
+                .distinct()
+                .filter { it != correct && !candidates.contains(it) }
+            candidates.addAll(globalFallback)
+        }
+
+        val distractors = candidates.take(2)
+        return (distractors + correct).shuffled()
     }
 
     private fun submitAnswer(selectedAnswer: String, selectedButton: Button) {
@@ -193,11 +221,12 @@ class MainActivity : AppCompatActivity() {
             button.isFocusable = false
         }
 
-        if (!isSelectedCorrect) {
-            selectedButton.setBackgroundColor(wrongColor)
-        }
+        val correctButton = answerButtons.firstOrNull { (it.tag as? String) == correctAnswer }
+        correctButton?.backgroundTintList = ColorStateList.valueOf(correctColor)
 
-        answerButtons.firstOrNull { (it.tag as? String) == correctAnswer }?.setBackgroundColor(correctColor)
+        if (!isSelectedCorrect) {
+            selectedButton.backgroundTintList = ColorStateList.valueOf(wrongColor)
+        }
     }
 
     private fun updateStreakLabel() {
