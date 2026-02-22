@@ -85,7 +85,10 @@
                 android:id="@+id/streakLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:text="@string/streak_label_default"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
                 android:textStyle="bold" />
         </LinearLayout>
 

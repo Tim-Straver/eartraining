@@ -1,5 +1,7 @@
 package com.example.eartraining
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.res.ColorStateList
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.OnBackPressedCallback
+import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
     private val trainer = AdaptiveTrainer()
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private var mediaPlayer: MediaPlayer? = null
     private var currentStreak: Int = 0
     private val answerButtons: MutableList<Button> = mutableListOf()
+    private var streakWiggleAnimator: ObjectAnimator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -251,7 +255,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateStreakLabel() {
-        streakLabel.text = getString(R.string.streak_label, currentStreak)
+        streakLabel.text = "🔥\n${currentStreak} streak"
+        updateStreakWiggle()
+    }
+
+    private fun updateStreakWiggle() {
+        streakWiggleAnimator?.cancel()
+        streakLabel.rotation = 0f
+
+        if (currentStreak <= 0) return
+
+        val clampedStreak = min(currentStreak, 30)
+        val amplitudeDegrees = (2f + clampedStreak * 0.3f).coerceAtMost(12f)
+        val durationMs = (520L - clampedStreak * 12L).coerceAtLeast(160L)
+
+        streakWiggleAnimator = ObjectAnimator.ofFloat(streakLabel, "rotation", -amplitudeDegrees, amplitudeDegrees).apply {
+            duration = durationMs
+            repeatMode = ValueAnimator.REVERSE
+            repeatCount = ValueAnimator.INFINITE
+            start()
+        }
     }
 
     private fun playCurrentAudio() {
@@ -365,6 +388,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        streakWiggleAnimator?.cancel()
+        streakWiggleAnimator = null
         mediaPlayer?.release()
         mediaPlayer = null
         super.onDestroy()
