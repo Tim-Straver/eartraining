@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.modeChordProgressionButton).setOnClickListener { startMode(TrainingMode.CHORD_PROGRESSION) }
         findViewById<Button>(R.id.modeIntervalButton).setOnClickListener { startMode(TrainingMode.INTERVAL) }
         findViewById<Button>(R.id.modeChordTypeButton).setOnClickListener { startMode(TrainingMode.CHORD_TYPE) }
-        findViewById<Button>(R.id.backToModesButton).setOnClickListener { showHome() }
         findViewById<Button>(R.id.playAudioButton).setOnClickListener { playCurrentAudio() }
         nextQuestionButton.setOnClickListener {
             if (nextQuestionButton.isEnabled) {
