@@ -1,15 +1,19 @@
 <resources>
     <string name="app_name">Ear Training</string>
-    <string name="mode_label">Training mode</string>
-    <string name="play_audio">Play Audio</string>
-    <string name="submit_answer">Submit</string>
+    <string name="mode_label">Choose training mode</string>
+    <string name="mode_chord_progression">Chord Progression</string>
+    <string name="mode_interval">Interval</string>
+    <string name="mode_chord_type">Chord Type</string>
+    <string name="play_audio">▶</string>
     <string name="next_question">Next Question</string>
     <string name="correct">✅ Correct!</string>
     <string name="incorrect">❌ Not quite. Correct answer: %1$s</string>
     <string name="missing_audio">Missing raw audio file: %1$s</string>
     <string name="missing_asset_audio">Missing asset audio file: %1$s</string>
-    <string name="select_answer">Select an answer first.</string>
     <string name="progress_label">Attempts: %1$d • Total wrong: %2$d • Current wrong streak: %3$d</string>
     <string name="audio_help_text">Add your own files in app/src/main/assets/chords and app/src/main/assets/notes (e.g. chords/C.wav, chords/Cm.wav, notes/C.wav).</string>
     <string name="no_questions">No questions available for this mode.</string>
+    <string name="streak_label">Streak: %1$d</string>
+    <string name="streak_label_default">Streak: 0</string>
+    <string name="back">⬅ Back to Home</string>
 </resources>
