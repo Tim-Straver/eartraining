@@ -100,6 +100,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun playCurrentAudio() {
         val question = currentQuestion ?: return
+        if (question.audioAssetSequence.isNotEmpty()) {
+            playAssetSequence(question.audioAssetSequence)
+            return
+        }
         if (question.audioAssetPath != null) {
             playAssetAudio(question.audioAssetPath)
             return
@@ -137,6 +141,42 @@ class MainActivity : AppCompatActivity() {
             setOnCompletionListener { mp -> mp.release(); mediaPlayer = null }
             start()
         }
+    }
+
+
+    private fun playAssetSequence(assetPaths: List<String>) {
+        val queue = ArrayDeque(assetPaths)
+
+        fun playNext() {
+            if (queue.isEmpty()) {
+                mediaPlayer?.release()
+                mediaPlayer = null
+                return
+            }
+            val nextPath = queue.removeFirst()
+
+            val afd = try {
+                assets.openFd(nextPath)
+            } catch (_: Exception) {
+                Toast.makeText(this, getString(R.string.missing_asset_audio, nextPath), Toast.LENGTH_LONG).show()
+                null
+            } ?: return
+
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
+                prepare()
+                setOnCompletionListener {
+                    it.release()
+                    mediaPlayer = null
+                    playNext()
+                }
+                start()
+            }
+        }
+
+        playNext()
     }
 
     private fun submitAnswer() {

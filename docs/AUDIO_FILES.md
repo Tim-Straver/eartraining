@@ -1,38 +1,29 @@
 # Audio bestanden toevoegen
 
-Je kunt bestanden nu in mappen zetten zoals je wilde:
+Plaats je bestanden hier:
 
-- `app/src/main/assets/chords/` (bijv. `C.wav`, `Cm.wav`, `G7.mp3`)
-- `app/src/main/assets/notes/` (bijv. `C.wav`, `D#.wav`, `F.mp3`)
+- `app/src/main/assets/chords/`
+- `app/src/main/assets/notes/`
 
-De app leest deze mappen dynamisch en maakt automatisch vragen + antwoordopties.
+Voorbeelden:
+- `app/src/main/assets/chords/C.wav`
+- `app/src/main/assets/chords/Bb.wav`
+- `app/src/main/assets/notes/F#.wav`
 
-## Hoe de app kiest
+## Hoe de app nu werkt
 
-- **Chord Types** mode: kiest willekeurig uit `assets/chords/*`
-- **Notes** mode: kiest willekeurig uit `assets/notes/*`
-- Het correcte antwoord wordt uit de bestandsnaam gehaald (zonder extensie), bijvoorbeeld:
-  - `chords/Cm.wav` → `Cm`
-  - `notes/C.wav` → `C`
+- **Chord Progressions**: bouwt een progressie uit meerdere losse chord-bestanden in `assets/chords`.
+- **Chord Types**: kiest 1 bestand uit `assets/chords`.
+- **Notes**: kiest 1 bestand uit `assets/notes`.
 
-## Best practices
+Dus: geen `prog_...` bestanden nodig als je `assets/chords` gevuld is.
 
-- Gebruik duidelijke bestandsnamen per label (`C`, `Cm`, `F#`, `Bb`, etc.)
-- Je mag `.wav`, `.mp3` of `.ogg` gebruiken
-- Vermijd dubbele labels met verschillende spellingen voor hetzelfde akkoord/noot
+## Voor progressions (belangrijk)
 
-## Opbouw van moeilijkheid
+De app verwacht voor progression-opbouw root-major bestanden zoals jij aangaf (`A`, `Ab`, `B`, `Bb`, etc.).
+Bestandsnaam zonder extensie is het chord label.
 
-Je kunt simpel starten met alleen C-gerelateerde files en later uitbreiden:
+Aanbevolen set voor beste dekking:
+- `C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B` (of enharmonische varianten met `#`)
 
-1. eerst alleen `C`, `Cm`, etc.
-2. daarna extra roots toevoegen (`D`, `E`, `F#`, `Bb`, ...)
-
-Zo groeit de moeilijkheid vanzelf mee met je dataset.
-
-
-## Belangrijk voor jouw melding over `prog_...`
-
-- In **Chord Progressions** mode gebruikt de app nu ook `assets/chords/*` zodra daar bestanden staan.
-- Daardoor krijg je niet meer de melding over missende `prog_...` raw files als je met assets werkt.
-- Alleen als `assets/chords` leeg is, valt de app terug op de oude startervragen in `res/raw`.
+Met die set kan de app progressies genereren per key (zoals I-V-vi-IV, ii-V-I, I-IV-V-I) door meerdere losse files achter elkaar af te spelen.
