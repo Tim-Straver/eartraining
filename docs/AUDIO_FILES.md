@@ -33,3 +33,6 @@ Met die set kan de app progressies genereren per key (zoals I-V-vi-IV, ii-V-I, I
 
 - De feedback met het correcte antwoord blijft zichtbaar totdat je de volgende vraag beantwoordt.
 - Bij progressions toont feedback nu zowel Romeinse cijfers als chordnamen, bijvoorbeeld: `I-V-vi-IV (C-G-A-F)`.
+
+
+- De app speelt nu alle progressions uit 4 losse chords, zodat je niet aan de lengte kunt horen welke het is.

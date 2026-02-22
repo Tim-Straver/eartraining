@@ -16,14 +16,14 @@ object AssetQuestionBank {
     private val progressionTemplates = listOf(
         // Easy
         ProgressionTemplate("1_4_5_1", "I-IV-V-I", listOf(1, 4, 5, 1), difficulty = 1),
-        ProgressionTemplate("1_5_1", "I-V-I", listOf(1, 5, 1), difficulty = 1),
+        ProgressionTemplate("1_5_1_1", "I-V-I-I", listOf(1, 5, 1, 1), difficulty = 1),
 
         // Medium
         ProgressionTemplate("1_5_6_4", "I-V-vi-IV", listOf(1, 5, 6, 4), difficulty = 2),
         ProgressionTemplate("6_4_1_5", "vi-IV-I-V", listOf(6, 4, 1, 5), difficulty = 2),
 
         // Harder
-        ProgressionTemplate("2_5_1", "ii-V-I", listOf(2, 5, 1), difficulty = 3),
+        ProgressionTemplate("2_5_1_1", "ii-V-I-I", listOf(2, 5, 1, 1), difficulty = 3),
         ProgressionTemplate("1_6_2_5", "I-vi-ii-V", listOf(1, 6, 2, 5), difficulty = 3)
     )
 
