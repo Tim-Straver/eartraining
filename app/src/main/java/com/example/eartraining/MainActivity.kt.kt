@@ -9,6 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.activity.OnBackPressedCallback
 
 class MainActivity : AppCompatActivity() {
     private val trainer = AdaptiveTrainer()
@@ -60,6 +61,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         showHome()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (trainingContainer.visibility == LinearLayout.VISIBLE) {
+                    showHome()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     private fun showHome() {
