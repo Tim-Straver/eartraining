@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var questionLabel: TextView
     private lateinit var answerGroup: LinearLayout
     private lateinit var feedbackLabel: TextView
-    private lateinit var progressLabel: TextView
+    private lateinit var streakFireLabel: TextView
     private lateinit var streakLabel: TextView
     private lateinit var nextQuestionButton: Button
 
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         questionLabel = findViewById(R.id.questionLabel)
         answerGroup = findViewById(R.id.answerGroup)
         feedbackLabel = findViewById(R.id.feedbackLabel)
-        progressLabel = findViewById(R.id.progressLabel)
+        streakFireLabel = findViewById(R.id.streakFireLabel)
         streakLabel = findViewById(R.id.streakLabel)
         nextQuestionButton = findViewById(R.id.nextQuestionButton)
 
@@ -170,9 +170,6 @@ class MainActivity : AppCompatActivity() {
             answerButtons.add(button)
         }
 
-        val stat = stats[question.id] ?: QuestionStats()
-        progressLabel.text = getString(R.string.progress_label, stat.attempts, stat.totalWrong, stat.correctStreak)
-
         if (currentMode.shouldAutoPlayOnQuestionLoad()) {
             playCurrentAudio()
         }
@@ -227,13 +224,6 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.incorrect, shownAnswer)
         }
 
-        progressLabel.text = getString(
-            R.string.progress_label,
-            newStats.attempts,
-            newStats.totalWrong,
-            newStats.correctStreak
-        )
-
         nextQuestionButton.isEnabled = true
     }
 
@@ -255,13 +245,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateStreakLabel() {
-        streakLabel.text = "🔥\n${currentStreak} streak"
+        streakLabel.text = "${currentStreak} streak"
         updateStreakWiggle()
     }
 
     private fun updateStreakWiggle() {
         streakWiggleAnimator?.cancel()
-        streakLabel.rotation = 0f
+        streakFireLabel.rotation = 0f
 
         if (currentStreak <= 0) return
 
@@ -269,7 +259,7 @@ class MainActivity : AppCompatActivity() {
         val amplitudeDegrees = (2f + clampedStreak * 0.3f).coerceAtMost(12f)
         val durationMs = (520L - clampedStreak * 12L).coerceAtLeast(160L)
 
-        streakWiggleAnimator = ObjectAnimator.ofFloat(streakLabel, "rotation", -amplitudeDegrees, amplitudeDegrees).apply {
+        streakWiggleAnimator = ObjectAnimator.ofFloat(streakFireLabel, "rotation", -amplitudeDegrees, amplitudeDegrees).apply {
             duration = durationMs
             repeatMode = ValueAnimator.REVERSE
             repeatCount = ValueAnimator.INFINITE
