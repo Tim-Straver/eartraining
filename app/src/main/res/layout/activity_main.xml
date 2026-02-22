@@ -81,15 +81,6 @@
                 android:layout_weight="1"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/streakLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/streak_label_default"
-                android:textAlignment="center"
-                android:textColor="@android:color/white"
-                android:textStyle="bold" />
         </LinearLayout>
 
         <TextView
@@ -132,6 +123,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp" />
+
+        <TextView
+            android:id="@+id/streakLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/streak_label_default"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
 
         <ScrollView
             android:layout_width="match_parent"
