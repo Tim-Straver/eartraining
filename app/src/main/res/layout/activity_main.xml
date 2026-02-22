@@ -56,17 +56,23 @@
         android:visibility="gone">
 
         <LinearLayout
+            android:id="@+id/trainingTopBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:minHeight="64dp"
+            android:orientation="horizontal"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
 
             <Button
                 android:id="@+id/backToModesButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minWidth="110dp"
                 android:minHeight="56dp"
                 android:text="@string/back"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
