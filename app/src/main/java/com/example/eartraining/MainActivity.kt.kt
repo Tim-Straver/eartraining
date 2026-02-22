@@ -1,5 +1,7 @@
 package com.example.eartraining
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.res.ColorStateList
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.OnBackPressedCallback
+import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
     private val trainer = AdaptiveTrainer()
@@ -21,8 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var modeTitleLabel: TextView
     private lateinit var questionLabel: TextView
     private lateinit var answerGroup: LinearLayout
-    private lateinit var feedbackLabel: TextView
-    private lateinit var progressLabel: TextView
+    private lateinit var streakFireLabel: TextView
     private lateinit var streakLabel: TextView
     private lateinit var nextQuestionButton: Button
 
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private var mediaPlayer: MediaPlayer? = null
     private var currentStreak: Int = 0
     private val answerButtons: MutableList<Button> = mutableListOf()
+    private var streakWiggleAnimator: ObjectAnimator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -45,8 +48,7 @@ class MainActivity : AppCompatActivity() {
         modeTitleLabel = findViewById(R.id.modeTitleLabel)
         questionLabel = findViewById(R.id.questionLabel)
         answerGroup = findViewById(R.id.answerGroup)
-        feedbackLabel = findViewById(R.id.feedbackLabel)
-        progressLabel = findViewById(R.id.progressLabel)
+        streakFireLabel = findViewById(R.id.streakFireLabel)
         streakLabel = findViewById(R.id.streakLabel)
         nextQuestionButton = findViewById(R.id.nextQuestionButton)
 
@@ -78,7 +80,6 @@ class MainActivity : AppCompatActivity() {
         homeContainer.visibility = LinearLayout.VISIBLE
         trainingContainer.visibility = LinearLayout.GONE
         currentQuestion = null
-        feedbackLabel.text = ""
         nextQuestionButton.isEnabled = false
     }
 
@@ -103,7 +104,25 @@ class MainActivity : AppCompatActivity() {
                     StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
                 }
             }
-            TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
+            TrainingMode.CHORD_TYPE -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
+                if (assetQuestions.isNotEmpty()) {
+                    val unlockedDifficulty = chordTypeUnlockedDifficulty()
+                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
+                }
+            }
+            TrainingMode.INTERVAL -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
+                if (assetQuestions.isNotEmpty()) {
+                    val unlockedDifficulty = intervalUnlockedDifficulty()
+                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
+                }
+            }
+            TrainingMode.NOTE -> {
                 val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
                 if (assetQuestions.isNotEmpty()) assetQuestions
                 else StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
@@ -121,7 +140,6 @@ class MainActivity : AppCompatActivity() {
         currentQuestion = trainer.pickQuestion(questions, stats)
         val question = currentQuestion ?: return
         questionLabel.text = question.prompt
-        feedbackLabel.text = ""
         answerGroup.removeAllViews()
         answerButtons.clear()
         nextQuestionButton.isEnabled = false
@@ -148,16 +166,13 @@ class MainActivity : AppCompatActivity() {
             answerButtons.add(button)
         }
 
-        val stat = stats[question.id] ?: QuestionStats()
-        progressLabel.text = getString(R.string.progress_label, stat.attempts, stat.totalWrong, stat.wrongStreak)
-
         if (currentMode.shouldAutoPlayOnQuestionLoad()) {
             playCurrentAudio()
         }
     }
 
     private fun TrainingMode.shouldAutoPlayOnQuestionLoad(): Boolean {
-        return this == TrainingMode.CHORD_PROGRESSION || this == TrainingMode.CHORD_TYPE
+        return this == TrainingMode.CHORD_PROGRESSION || this == TrainingMode.CHORD_TYPE || this == TrainingMode.INTERVAL
     }
 
     private fun normalizedChoices(question: TrainingQuestion): List<String> {
@@ -198,20 +213,6 @@ class MainActivity : AppCompatActivity() {
 
         highlightAnswers(selectedButton, question.correctAnswer, correct)
 
-        val shownAnswer = answerDisplay(question)
-        feedbackLabel.text = if (correct) {
-            "${getString(R.string.correct)} $shownAnswer"
-        } else {
-            getString(R.string.incorrect, shownAnswer)
-        }
-
-        progressLabel.text = getString(
-            R.string.progress_label,
-            newStats.attempts,
-            newStats.totalWrong,
-            newStats.wrongStreak
-        )
-
         nextQuestionButton.isEnabled = true
     }
 
@@ -233,7 +234,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateStreakLabel() {
-        streakLabel.text = getString(R.string.streak_label, currentStreak)
+        streakLabel.text = "${currentStreak} streak"
+        updateStreakWiggle()
+    }
+
+    private fun updateStreakWiggle() {
+        streakWiggleAnimator?.cancel()
+        streakFireLabel.rotation = 0f
+
+        if (currentStreak <= 0) return
+
+        val clampedStreak = min(currentStreak, 30)
+        val amplitudeDegrees = (2f + clampedStreak * 0.3f).coerceAtMost(12f)
+        val durationMs = (520L - clampedStreak * 12L).coerceAtLeast(160L)
+
+        streakWiggleAnimator = ObjectAnimator.ofFloat(streakFireLabel, "rotation", -amplitudeDegrees, amplitudeDegrees).apply {
+            duration = durationMs
+            repeatMode = ValueAnimator.REVERSE
+            repeatCount = ValueAnimator.INFINITE
+            start()
+        }
     }
 
     private fun playCurrentAudio() {
@@ -319,20 +339,23 @@ class MainActivity : AppCompatActivity() {
         return baseLevel.coerceIn(1, AssetQuestionBank.maxProgressionDifficulty())
     }
 
-    private fun progressionChordNames(question: TrainingQuestion): String {
-        if (question.mode != TrainingMode.CHORD_PROGRESSION || question.audioAssetSequence.isEmpty()) return ""
-        return question.audioAssetSequence
-            .map { assetPath -> assetPath.substringAfterLast('/').substringBeforeLast('.') }
-            .joinToString("-")
+    private fun chordTypeUnlockedDifficulty(): Int {
+        val chordTypeStats = stats.filterKeys { id -> id.startsWith("asset_chords_") }.values
+        val totalCorrect = chordTypeStats.sumOf { st -> st.attempts - st.totalWrong }
+        val baseLevel = 1 + (totalCorrect / 6)
+        return baseLevel.coerceIn(1, AssetQuestionBank.maxChordTypeDifficulty())
     }
 
-    private fun answerDisplay(question: TrainingQuestion): String {
-        if (question.mode != TrainingMode.CHORD_PROGRESSION) return question.correctAnswer
-        val chords = progressionChordNames(question)
-        return if (chords.isBlank()) question.correctAnswer else "${question.correctAnswer} ($chords)"
+    private fun intervalUnlockedDifficulty(): Int {
+        val intervalStats = stats.filterKeys { id -> id.startsWith("asset_interval_") }.values
+        val totalCorrect = intervalStats.sumOf { st -> st.attempts - st.totalWrong }
+        val baseLevel = 1 + (totalCorrect / 6)
+        return baseLevel.coerceIn(1, AssetQuestionBank.maxIntervalDifficulty())
     }
 
     override fun onDestroy() {
+        streakWiggleAnimator?.cancel()
+        streakWiggleAnimator = null
         mediaPlayer?.release()
         mediaPlayer = null
         super.onDestroy()

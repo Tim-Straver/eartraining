@@ -30,7 +30,8 @@
             android:layout_marginBottom="12dp"
             android:minHeight="84dp"
             android:text="@string/mode_chord_progression"
-            android:textSize="22sp" />
+            android:textSize="36sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/modeIntervalButton"
@@ -40,7 +41,8 @@
             android:layout_marginBottom="12dp"
             android:minHeight="84dp"
             android:text="@string/mode_interval"
-            android:textSize="22sp" />
+            android:textSize="36sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/modeChordTypeButton"
@@ -49,7 +51,8 @@
             android:layout_weight="1"
             android:minHeight="84dp"
             android:text="@string/mode_chord_type"
-            android:textSize="22sp" />
+            android:textSize="36sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -81,12 +84,6 @@
                 android:layout_weight="1"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/streakLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/streak_label_default"
-                android:textStyle="bold" />
         </LinearLayout>
 
         <TextView
@@ -112,23 +109,35 @@
             android:textSize="52sp"
             android:textStyle="bold" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/feedbackLabel"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textStyle="bold" />
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp"
+            android:gravity="center"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/progressLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
+            <TextView
+                android:id="@+id/streakFireLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/streak_fire"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="42sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/streakLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/streak_label_default"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"
@@ -140,7 +149,7 @@
                 android:id="@+id/answerGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="bottom"
+                android:gravity="top"
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp" />

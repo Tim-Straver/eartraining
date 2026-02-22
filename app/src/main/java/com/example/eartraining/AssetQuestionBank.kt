@@ -5,11 +5,19 @@ import java.util.Locale
 
 object AssetQuestionBank {
     private val majorScaleOffsets = listOf(0, 2, 4, 5, 7, 9, 11)
+    private const val fileNameSeparatorPattern = "[_\\-]"
 
     private data class ProgressionTemplate(
         val id: String,
         val label: String,
         val degrees: List<Int>,
+        val difficulty: Int
+    )
+
+    private data class IntervalTemplate(
+        val id: String,
+        val label: String,
+        val semitones: Int,
         val difficulty: Int
     )
 
@@ -27,10 +35,28 @@ object AssetQuestionBank {
         ProgressionTemplate("1_6_2_5", "I-vi-ii-V", listOf(1, 6, 2, 5), difficulty = 3)
     )
 
+
+    private val intervalTemplates = listOf(
+        // Easy
+        IntervalTemplate("m2", "Minor 2nd", semitones = 1, difficulty = 1),
+        IntervalTemplate("M2", "Major 2nd", semitones = 2, difficulty = 1),
+        IntervalTemplate("M3", "Major 3rd", semitones = 4, difficulty = 1),
+
+        // Medium
+        IntervalTemplate("m3", "Minor 3rd", semitones = 3, difficulty = 2),
+        IntervalTemplate("P4", "Perfect 4th", semitones = 5, difficulty = 2),
+        IntervalTemplate("P5", "Perfect 5th", semitones = 7, difficulty = 2),
+
+        // Harder
+        IntervalTemplate("TT", "Tritone", semitones = 6, difficulty = 3),
+        IntervalTemplate("m7", "Minor 7th", semitones = 10, difficulty = 3),
+        IntervalTemplate("M7", "Major 7th", semitones = 11, difficulty = 3)
+    )
     fun questionsForMode(context: Context, mode: TrainingMode): List<TrainingQuestion> {
         return when (mode) {
             TrainingMode.CHORD_PROGRESSION -> buildProgressionQuestions(context)
             TrainingMode.CHORD_TYPE -> buildChordTypeQuestions(context)
+            TrainingMode.INTERVAL -> buildIntervalQuestions(context)
             TrainingMode.NOTE -> buildLabelQuestions(context, "notes", mode, "Identify the note")
             else -> emptyList()
         }
@@ -38,9 +64,13 @@ object AssetQuestionBank {
 
     fun maxProgressionDifficulty(): Int = progressionTemplates.maxOfOrNull { it.difficulty } ?: 1
 
+    fun maxChordTypeDifficulty(): Int = 3
+
+    fun maxIntervalDifficulty(): Int = intervalTemplates.maxOfOrNull { it.difficulty } ?: 1
+
     private fun buildProgressionQuestions(context: Context): List<TrainingQuestion> {
         val chordFiles = context.assets.list("chords").orEmpty()
-            .filter { it.contains('.') }
+            .filter { it.isNotBlank() }
             .sorted()
 
         if (chordFiles.isEmpty()) return emptyList()
@@ -94,7 +124,7 @@ object AssetQuestionBank {
         prompt: String
     ): List<TrainingQuestion> {
         val files = context.assets.list(folder).orEmpty()
-            .filter { it.contains('.') }
+            .filter { it.isNotBlank() }
             .sorted()
 
         if (files.isEmpty()) return emptyList()
@@ -123,9 +153,55 @@ object AssetQuestionBank {
         }
     }
 
+    private fun buildIntervalQuestions(context: Context): List<TrainingQuestion> {
+        val files = context.assets.list("notes").orEmpty()
+            .filter { it.isNotBlank() }
+            .sorted()
+
+        if (files.size < 3) return emptyList()
+
+        val noteByPitchClass = files.mapNotNull { file ->
+            val baseName = file.substringBeforeLast('.').trim()
+            val pitchClass = parsePitchClass(baseName) ?: return@mapNotNull null
+            pitchClass to file
+        }.toMap()
+
+        if (noteByPitchClass.size < 3) return emptyList()
+
+        val labelsByDifficulty = intervalTemplates
+            .groupBy { it.difficulty }
+            .mapValues { (_, templates) -> templates.map { it.label }.distinct() }
+
+        val roots = noteByPitchClass.keys.sorted()
+
+        return roots.flatMap { rootPc ->
+            intervalTemplates.mapNotNull { template ->
+                val upperPc = mod12(rootPc + template.semitones)
+                val rootFile = noteByPitchClass[rootPc] ?: return@mapNotNull null
+                val upperFile = noteByPitchClass[upperPc] ?: return@mapNotNull null
+                val unlockedLabels = labelsByDifficulty
+                    .filterKeys { it <= template.difficulty }
+                    .values
+                    .flatten()
+                    .distinct()
+                TrainingQuestion(
+                    id = "asset_interval_${rootPc}_${template.id}",
+                    mode = TrainingMode.INTERVAL,
+                    prompt = "Identify the interval",
+                    audioResName = "",
+                    audioAssetPath = null,
+                    audioAssetSequence = listOf("notes/$rootFile", "notes/$upperFile"),
+                    difficulty = template.difficulty,
+                    choices = buildChoices(template.label, unlockedLabels),
+                    correctAnswer = template.label
+                )
+            }
+        }
+    }
+
     private fun buildChordTypeQuestions(context: Context): List<TrainingQuestion> {
         val files = context.assets.list("chords").orEmpty()
-            .filter { it.contains('.') }
+            .filter { it.isNotBlank() }
             .sorted()
 
         if (files.isEmpty()) return emptyList()
@@ -139,9 +215,17 @@ object AssetQuestionBank {
 
         if (qualityByFile.isEmpty()) return emptyList()
 
-        val labels = qualityByFile.values.distinct()
+        val labelsByDifficulty = qualityByFile.values
+            .distinct()
+            .groupBy { qualityDifficulty(it) }
 
         return qualityByFile.entries.map { (file, answer) ->
+            val difficulty = qualityDifficulty(answer)
+            val unlockedLabels = labelsByDifficulty
+                .filterKeys { it <= difficulty }
+                .values
+                .flatten()
+                .distinct()
             TrainingQuestion(
                 id = "asset_chords_${file}",
                 mode = TrainingMode.CHORD_TYPE,
@@ -149,8 +233,8 @@ object AssetQuestionBank {
                 audioResName = "",
                 audioAssetPath = "chords/$file",
                 audioAssetSequence = emptyList(),
-                difficulty = 1,
-                choices = buildChoices(answer, labels),
+                difficulty = difficulty,
+                choices = buildChoices(answer, unlockedLabels),
                 correctAnswer = answer
             )
         }
@@ -184,16 +268,18 @@ object AssetQuestionBank {
     }
 
     private fun parseChordFileName(name: String): Pair<String, String>? {
-        val regex = Regex("^([A-Ga-g](?:#|b)?)[_-]?(.+)$")
+        val regex = Regex("^([A-Ga-g](?:#|b)?)(.*)$")
         val match = regex.matchEntire(name.trim()) ?: return null
         val root = match.groupValues[1]
-        val quality = match.groupValues[2].trim()
-        if (quality.isEmpty()) return null
+        val quality = match.groupValues[2]
+            .trim()
+            .replaceFirst(Regex("^$fileNameSeparatorPattern"), "")
         return root to quality
     }
 
     private fun normalizeChordQuality(rawQuality: String): String? {
         return when (rawQuality.lowercase(Locale.ROOT)) {
+            "" -> "Major"
             "maj", "major" -> "Major"
             "min", "minor", "m" -> "Minor"
             "sus2" -> "Sus2"
@@ -201,6 +287,15 @@ object AssetQuestionBank {
             "dim", "diminished" -> "Diminished"
             "7", "7th", "dom7", "dominant7" -> "7th"
             else -> null
+        }
+    }
+
+    private fun qualityDifficulty(quality: String): Int {
+        return when (quality) {
+            "Major", "Minor" -> 1
+            "Sus2", "Sus4", "7th" -> 2
+            "Diminished" -> 3
+            else -> 1
         }
     }
 
