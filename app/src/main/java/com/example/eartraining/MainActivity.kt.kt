@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val stat = stats[question.id] ?: QuestionStats()
-        progressLabel.text = getString(R.string.progress_label, stat.attempts, stat.totalWrong, stat.wrongStreak)
+        progressLabel.text = getString(R.string.progress_label, stat.attempts, stat.totalWrong, stat.correctStreak)
 
         if (currentMode.shouldAutoPlayOnQuestionLoad()) {
             playCurrentAudio()
@@ -231,7 +231,7 @@ class MainActivity : AppCompatActivity() {
             R.string.progress_label,
             newStats.attempts,
             newStats.totalWrong,
-            newStats.wrongStreak
+            newStats.correctStreak
         )
 
         nextQuestionButton.isEnabled = true

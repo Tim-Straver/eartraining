@@ -13,12 +13,17 @@ class StatsStore(context: Context) {
             .lineSequence()
             .mapNotNull { line ->
                 val parts = line.split("|")
-                if (parts.size != 4) return@mapNotNull null
+                if (parts.size != 4 && parts.size != 5) return@mapNotNull null
                 val id = parts[0]
                 val attempts = parts[1].toIntOrNull() ?: return@mapNotNull null
                 val totalWrong = parts[2].toIntOrNull() ?: return@mapNotNull null
                 val wrongStreak = parts[3].toIntOrNull() ?: return@mapNotNull null
-                id to QuestionStats(attempts, totalWrong, wrongStreak)
+                val correctStreak = if (parts.size == 5) {
+                    parts[4].toIntOrNull() ?: return@mapNotNull null
+                } else {
+                    0
+                }
+                id to QuestionStats(attempts, totalWrong, wrongStreak, correctStreak)
             }
             .toMap()
             .toMutableMap()
@@ -26,7 +31,7 @@ class StatsStore(context: Context) {
 
     fun save(stats: Map<String, QuestionStats>) {
         val serialized = stats.entries.joinToString("\n") { (id, stat) ->
-            "$id|${stat.attempts}|${stat.totalWrong}|${stat.wrongStreak}"
+            "$id|${stat.attempts}|${stat.totalWrong}|${stat.wrongStreak}|${stat.correctStreak}"
         }
         prefs.edit().putString(KEY_STATS, serialized).apply()
     }

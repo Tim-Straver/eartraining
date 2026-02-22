@@ -30,7 +30,8 @@ data class TrainingQuestion(
 data class QuestionStats(
     val attempts: Int = 0,
     val totalWrong: Int = 0,
-    val wrongStreak: Int = 0
+    val wrongStreak: Int = 0,
+    val correctStreak: Int = 0
 )
 
 class AdaptiveTrainer(
@@ -62,12 +63,17 @@ class AdaptiveTrainer(
     fun updateStats(previous: QuestionStats?, wasCorrect: Boolean): QuestionStats {
         val old = previous ?: QuestionStats()
         return if (wasCorrect) {
-            old.copy(attempts = old.attempts + 1, wrongStreak = 0)
+            old.copy(
+                attempts = old.attempts + 1,
+                wrongStreak = 0,
+                correctStreak = old.correctStreak + 1
+            )
         } else {
             old.copy(
                 attempts = old.attempts + 1,
                 totalWrong = old.totalWrong + 1,
-                wrongStreak = old.wrongStreak + 1
+                wrongStreak = old.wrongStreak + 1,
+                correctStreak = 0
             )
         }
     }
