@@ -30,7 +30,7 @@ object AssetQuestionBank {
     fun questionsForMode(context: Context, mode: TrainingMode): List<TrainingQuestion> {
         return when (mode) {
             TrainingMode.CHORD_PROGRESSION -> buildProgressionQuestions(context)
-            TrainingMode.CHORD_TYPE -> buildLabelQuestions(context, "chords", mode, "Identify the chord")
+            TrainingMode.CHORD_TYPE -> buildChordTypeQuestions(context)
             TrainingMode.NOTE -> buildLabelQuestions(context, "notes", mode, "Identify the note")
             else -> emptyList()
         }
@@ -123,6 +123,39 @@ object AssetQuestionBank {
         }
     }
 
+    private fun buildChordTypeQuestions(context: Context): List<TrainingQuestion> {
+        val files = context.assets.list("chords").orEmpty()
+            .filter { it.contains('.') }
+            .sorted()
+
+        if (files.isEmpty()) return emptyList()
+
+        val qualityByFile = files.mapNotNull { file ->
+            val baseName = file.substringBeforeLast('.').trim()
+            val (_, qualityToken) = parseChordFileName(baseName) ?: return@mapNotNull null
+            val normalizedQuality = normalizeChordQuality(qualityToken) ?: return@mapNotNull null
+            file to normalizedQuality
+        }.toMap()
+
+        if (qualityByFile.isEmpty()) return emptyList()
+
+        val labels = qualityByFile.values.distinct()
+
+        return qualityByFile.entries.map { (file, answer) ->
+            TrainingQuestion(
+                id = "asset_chords_${file}",
+                mode = TrainingMode.CHORD_TYPE,
+                prompt = "Identify the chord type",
+                audioResName = "",
+                audioAssetPath = "chords/$file",
+                audioAssetSequence = emptyList(),
+                difficulty = 1,
+                choices = buildChoices(answer, labels),
+                correctAnswer = answer
+            )
+        }
+    }
+
     private fun buildChoices(correctAnswer: String, labels: List<String>): List<String> {
         val distractors = labels.filterNot { it == correctAnswer }.shuffled().take(3)
         return (distractors + correctAnswer).shuffled()
@@ -147,6 +180,27 @@ object AssetQuestionBank {
             "#" -> mod12(base + 1)
             "b" -> mod12(base - 1)
             else -> base
+        }
+    }
+
+    private fun parseChordFileName(name: String): Pair<String, String>? {
+        val regex = Regex("^([A-Ga-g](?:#|b)?)[_-]?(.+)$")
+        val match = regex.matchEntire(name.trim()) ?: return null
+        val root = match.groupValues[1]
+        val quality = match.groupValues[2].trim()
+        if (quality.isEmpty()) return null
+        return root to quality
+    }
+
+    private fun normalizeChordQuality(rawQuality: String): String? {
+        return when (rawQuality.lowercase(Locale.ROOT)) {
+            "maj", "major" -> "Major"
+            "min", "minor", "m" -> "Minor"
+            "sus2" -> "Sus2"
+            "sus4" -> "Sus4"
+            "dim", "diminished" -> "Diminished"
+            "7", "7th", "dom7", "dominant7" -> "7th"
+            else -> null
         }
     }
 
