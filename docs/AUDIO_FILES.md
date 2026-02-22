@@ -27,3 +27,9 @@ Aanbevolen set voor beste dekking:
 - `C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B` (of enharmonische varianten met `#`)
 
 Met die set kan de app progressies genereren per key (zoals I-V-vi-IV, ii-V-I, I-IV-V-I) door meerdere losse files achter elkaar af te spelen.
+
+
+## Antwoordgedrag
+
+- Bij een **goed antwoord** gaat de app automatisch naar de volgende vraag.
+- Bij progressions toont feedback nu zowel Romeinse cijfers als chordnamen, bijvoorbeeld: `I-V-vi-IV (C-G-A-F)`.

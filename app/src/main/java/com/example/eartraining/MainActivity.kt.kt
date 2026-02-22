@@ -2,6 +2,8 @@ package com.example.eartraining
 
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.RadioButton
@@ -179,6 +181,25 @@ class MainActivity : AppCompatActivity() {
         playNext()
     }
 
+    private fun progressionChordNames(question: TrainingQuestion): String {
+        if (question.mode != TrainingMode.CHORD_PROGRESSION || question.audioAssetSequence.isEmpty()) return ""
+        return question.audioAssetSequence
+            .map { assetPath ->
+                assetPath.substringAfterLast('/').substringBeforeLast('.')
+            }
+            .joinToString("-")
+    }
+
+    private fun answerDisplay(question: TrainingQuestion): String {
+        if (question.mode != TrainingMode.CHORD_PROGRESSION) return question.correctAnswer
+        val chords = progressionChordNames(question)
+        return if (chords.isBlank()) {
+            question.correctAnswer
+        } else {
+            "${question.correctAnswer} ($chords)"
+        }
+    }
+
     private fun submitAnswer() {
         val question = currentQuestion ?: return
         val selectedId = answerGroup.checkedRadioButtonId
@@ -193,10 +214,11 @@ class MainActivity : AppCompatActivity() {
         stats[question.id] = newStats
         statsStore.save(stats)
 
+        val shownAnswer = answerDisplay(question)
         feedbackLabel.text = if (correct) {
-            getString(R.string.correct)
+            "${getString(R.string.correct)} $shownAnswer"
         } else {
-            getString(R.string.incorrect, question.correctAnswer)
+            getString(R.string.incorrect, shownAnswer)
         }
 
         progressLabel.text = getString(
@@ -205,6 +227,13 @@ class MainActivity : AppCompatActivity() {
             newStats.totalWrong,
             newStats.wrongStreak
         )
+
+
+        if (correct) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                loadNewQuestion()
+            }, 900)
+        }
     }
 
     override fun onDestroy() {
