@@ -176,8 +176,11 @@ class MainActivity : AppCompatActivity() {
         for (index in 0 until answerGroup.childCount) {
             val child = answerGroup.getChildAt(index)
             if (child is Button) {
-                child.isEnabled = false
-                if (child.text.toString() == correctAnswer) {
+                child.isClickable = false
+                child.isFocusable = false
+                child.backgroundTintList = null
+
+                if (child.text.toString().trim() == correctAnswer.trim()) {
                     child.backgroundTintList = ColorStateList.valueOf(correctColor)
                 }
             }
