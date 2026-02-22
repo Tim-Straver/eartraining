@@ -9,13 +9,22 @@ object AssetQuestionBank {
     private data class ProgressionTemplate(
         val id: String,
         val label: String,
-        val degrees: List<Int>
+        val degrees: List<Int>,
+        val difficulty: Int
     )
 
     private val progressionTemplates = listOf(
-        ProgressionTemplate("1_5_6_4", "I-V-vi-IV", listOf(1, 5, 6, 4)),
-        ProgressionTemplate("2_5_1", "ii-V-I", listOf(2, 5, 1)),
-        ProgressionTemplate("1_4_5_1", "I-IV-V-I", listOf(1, 4, 5, 1))
+        // Easy
+        ProgressionTemplate("1_4_5_1", "I-IV-V-I", listOf(1, 4, 5, 1), difficulty = 1),
+        ProgressionTemplate("1_5_1", "I-V-I", listOf(1, 5, 1), difficulty = 1),
+
+        // Medium
+        ProgressionTemplate("1_5_6_4", "I-V-vi-IV", listOf(1, 5, 6, 4), difficulty = 2),
+        ProgressionTemplate("6_4_1_5", "vi-IV-I-V", listOf(6, 4, 1, 5), difficulty = 2),
+
+        // Harder
+        ProgressionTemplate("2_5_1", "ii-V-I", listOf(2, 5, 1), difficulty = 3),
+        ProgressionTemplate("1_6_2_5", "I-vi-ii-V", listOf(1, 6, 2, 5), difficulty = 3)
     )
 
     fun questionsForMode(context: Context, mode: TrainingMode): List<TrainingQuestion> {
@@ -26,6 +35,8 @@ object AssetQuestionBank {
             else -> emptyList()
         }
     }
+
+    fun maxProgressionDifficulty(): Int = progressionTemplates.maxOfOrNull { it.difficulty } ?: 1
 
     private fun buildProgressionQuestions(context: Context): List<TrainingQuestion> {
         val chordFiles = context.assets.list("chords").orEmpty()
@@ -43,7 +54,6 @@ object AssetQuestionBank {
         if (rootFileByPitchClass.size < 6) return emptyList()
 
         val availableKeys = rootFileByPitchClass.keys.sorted()
-        val allChoices = progressionTemplates.map { it.label }
 
         return availableKeys.flatMap { keyPc ->
             progressionTemplates.mapNotNull { template ->
@@ -57,6 +67,10 @@ object AssetQuestionBank {
                     null
                 } else {
                     val keyName = prettifyLabel(rootFileByPitchClass[keyPc]?.substringBeforeLast('.') ?: "Key")
+                    val allChoices = progressionTemplates
+                        .filter { it.difficulty <= template.difficulty }
+                        .map { it.label }
+                        .distinct()
                     TrainingQuestion(
                         id = "asset_prog_${keyPc}_${template.id}",
                         mode = TrainingMode.CHORD_PROGRESSION,
@@ -64,6 +78,7 @@ object AssetQuestionBank {
                         audioResName = "",
                         audioAssetPath = null,
                         audioAssetSequence = sequenceFiles.map { "chords/$it" },
+                        difficulty = template.difficulty,
                         choices = allChoices,
                         correctAnswer = template.label
                     )
@@ -101,6 +116,7 @@ object AssetQuestionBank {
                 audioResName = "",
                 audioAssetPath = "$folder/$file",
                 audioAssetSequence = emptyList(),
+                difficulty = 1,
                 choices = buildChoices(answer, labels),
                 correctAnswer = answer
             )

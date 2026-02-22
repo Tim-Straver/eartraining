@@ -22,6 +22,7 @@ data class TrainingQuestion(
     val audioResName: String,
     val audioAssetPath: String? = null,
     val audioAssetSequence: List<String> = emptyList(),
+    val difficulty: Int = 1,
     val choices: List<String>,
     val correctAnswer: String
 )

@@ -12,7 +12,7 @@ Voorbeelden:
 
 ## Hoe de app nu werkt
 
-- **Chord Progressions**: bouwt een progressie uit meerdere losse chord-bestanden in `assets/chords`.
+- **Chord Progressions**: bouwt een progressie uit meerdere losse chord-bestanden in `assets/chords`, start met makkelijke progressies en unlockt geleidelijk moeilijkere varianten op basis van je goede antwoorden.
 - **Chord Types**: kiest 1 bestand uit `assets/chords`.
 - **Notes**: kiest 1 bestand uit `assets/notes`.
 
@@ -31,5 +31,5 @@ Met die set kan de app progressies genereren per key (zoals I-V-vi-IV, ii-V-I, I
 
 ## Antwoordgedrag
 
-- Bij een **goed antwoord** gaat de app automatisch naar de volgende vraag.
+- De feedback met het correcte antwoord blijft zichtbaar totdat je de volgende vraag beantwoordt.
 - Bij progressions toont feedback nu zowel Romeinse cijfers als chordnamen, bijvoorbeeld: `I-V-vi-IV (C-G-A-F)`.

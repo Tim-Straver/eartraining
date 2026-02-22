@@ -2,8 +2,6 @@ package com.example.eartraining
 
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.RadioButton
@@ -61,7 +59,16 @@ class MainActivity : AppCompatActivity() {
     private fun loadNewQuestion() {
         val selectedMode = TrainingMode.fromDisplayName(modeSpinner.selectedItem?.toString().orEmpty())
         val questions = when (selectedMode) {
-            TrainingMode.CHORD_PROGRESSION, TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
+            TrainingMode.CHORD_PROGRESSION -> {
+                val assetQuestions = AssetQuestionBank.questionsForMode(this, selectedMode)
+                if (assetQuestions.isNotEmpty()) {
+                    val unlockedDifficulty = progressionUnlockedDifficulty()
+                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                } else {
+                    StarterQuestionBank.allQuestions.filter { it.mode == selectedMode }
+                }
+            }
+            TrainingMode.CHORD_TYPE, TrainingMode.NOTE -> {
                 val assetQuestions = AssetQuestionBank.questionsForMode(this, selectedMode)
                 if (assetQuestions.isNotEmpty()) {
                     assetQuestions
@@ -79,7 +86,6 @@ class MainActivity : AppCompatActivity() {
         currentQuestion = trainer.pickQuestion(questions, stats)
         val question = currentQuestion ?: return
         questionLabel.text = question.prompt
-        feedbackLabel.text = ""
         answerGroup.removeAllViews()
 
         question.choices.forEachIndexed { index, choice ->
@@ -181,6 +187,13 @@ class MainActivity : AppCompatActivity() {
         playNext()
     }
 
+    private fun progressionUnlockedDifficulty(): Int {
+        val progressionStats = stats.filterKeys { id -> id.startsWith("asset_prog_") }.values
+        val totalCorrect = progressionStats.sumOf { st -> st.attempts - st.totalWrong }
+        val baseLevel = 1 + (totalCorrect / 5)
+        return baseLevel.coerceIn(1, AssetQuestionBank.maxProgressionDifficulty())
+    }
+
     private fun progressionChordNames(question: TrainingQuestion): String {
         if (question.mode != TrainingMode.CHORD_PROGRESSION || question.audioAssetSequence.isEmpty()) return ""
         return question.audioAssetSequence
@@ -227,13 +240,6 @@ class MainActivity : AppCompatActivity() {
             newStats.totalWrong,
             newStats.wrongStreak
         )
-
-
-        if (correct) {
-            Handler(Looper.getMainLooper()).postDelayed({
-                loadNewQuestion()
-            }, 900)
-        }
     }
 
     override fun onDestroy() {
