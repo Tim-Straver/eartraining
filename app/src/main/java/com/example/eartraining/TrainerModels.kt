@@ -5,7 +5,8 @@ import kotlin.random.Random
 enum class TrainingMode(val displayName: String) {
     CHORD_PROGRESSION("Chord Progressions"),
     INTERVAL("Intervals"),
-    CHORD_TYPE("Chord Types");
+    CHORD_TYPE("Chord Types"),
+    NOTE("Notes");
 
     companion object {
         fun fromDisplayName(name: String): TrainingMode {
@@ -19,6 +20,7 @@ data class TrainingQuestion(
     val mode: TrainingMode,
     val prompt: String,
     val audioResName: String,
+    val audioAssetPath: String? = null,
     val choices: List<String>,
     val correctAnswer: String
 )
