@@ -1,6 +1,5 @@
 package com.example.eartraining
 
-import android.content.res.ColorStateList
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Button
@@ -192,13 +191,13 @@ class MainActivity : AppCompatActivity() {
                 child.isFocusable = false
 
                 if (child.text.toString().trim() == correctAnswer.trim()) {
-                    child.backgroundTintList = ColorStateList.valueOf(correctColor)
+                    child.setBackgroundColor(correctColor)
                 }
             }
         }
 
         if (!isSelectedCorrect) {
-            selectedButton.backgroundTintList = ColorStateList.valueOf(wrongColor)
+            selectedButton.setBackgroundColor(wrongColor)
         }
     }
 
