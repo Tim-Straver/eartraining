@@ -4,7 +4,7 @@
     <string name="mode_chord_progression">Chord Progression</string>
     <string name="mode_interval">Interval</string>
     <string name="mode_chord_type">Chord Type</string>
-    <string name="play_audio">▶ Play</string>
+    <string name="play_audio">▶</string>
     <string name="next_question">Next Question</string>
     <string name="correct">✅ Correct!</string>
     <string name="incorrect">❌ Not quite. Correct answer: %1$s</string>
