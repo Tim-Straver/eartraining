@@ -19,7 +19,7 @@
             android:layout_marginBottom="24dp"
             android:layout_marginTop="84dp"
             android:text="@string/mode_label"
-            android:textSize="42sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <Button
@@ -30,7 +30,8 @@
             android:layout_marginBottom="12dp"
             android:minHeight="84dp"
             android:text="@string/mode_chord_progression"
-            android:textSize="22sp" />
+            android:textSize="36sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/modeIntervalButton"
@@ -40,7 +41,8 @@
             android:layout_marginBottom="12dp"
             android:minHeight="84dp"
             android:text="@string/mode_interval"
-            android:textSize="22sp" />
+            android:textSize="36sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/modeChordTypeButton"
@@ -49,7 +51,8 @@
             android:layout_weight="1"
             android:minHeight="84dp"
             android:text="@string/mode_chord_type"
-            android:textSize="22sp" />
+            android:textSize="36sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
