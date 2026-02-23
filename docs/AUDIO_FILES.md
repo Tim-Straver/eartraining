@@ -19,6 +19,7 @@ Voorbeelden:
 - **Notes**: kiest 1 bestand uit `assets/notes`.
 
 Dus: geen `prog_...` bestanden nodig als je `assets/chords` gevuld is.
+Als er geen bruikbare chord-roots gevonden worden, toont de app geen progression-vragen (in plaats van terugvallen op `prog_...` raw files).
 
 ## Naamgeving
 

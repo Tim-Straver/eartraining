@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                     val unlockedDifficulty = progressionUnlockedDifficulty()
                     assetQuestions.filter { it.difficulty <= unlockedDifficulty }
                 } else {
-                    StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
+                    emptyList()
                 }
             }
             TrainingMode.CHORD_TYPE -> {

@@ -77,9 +77,16 @@ object AssetQuestionBank {
 
         val rootFilesByPitchClass = chordFiles.mapNotNull { file ->
             val rawLabel = file.substringBeforeLast('.').trim()
-            val pitchClass = parsePitchClass(rawLabel) ?: return@mapNotNull null
-            pitchClass to file
-        }.groupBy({ it.first }, { it.second })
+            val (rootToken, qualityToken) = parseChordFileName(rawLabel) ?: return@mapNotNull null
+            val pitchClass = parsePitchClass(rootToken) ?: return@mapNotNull null
+            val quality = normalizeChordQuality(qualityToken)
+            Triple(pitchClass, file, quality)
+        }
+            .groupBy({ it.first }, { it.second to it.third })
+            .mapValues { (_, entries) ->
+                val majors = entries.filter { (_, quality) -> quality == "Major" }.map { it.first }
+                if (majors.isNotEmpty()) majors else entries.map { it.first }
+            }
 
         if (rootFilesByPitchClass.size < 6) return emptyList()
 
