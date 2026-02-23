@@ -75,28 +75,30 @@ object AssetQuestionBank {
 
         if (chordFiles.isEmpty()) return emptyList()
 
-        val rootFileByPitchClass = chordFiles.mapNotNull { file ->
+        val rootFilesByPitchClass = chordFiles.mapNotNull { file ->
             val rawLabel = file.substringBeforeLast('.').trim()
             val pitchClass = parsePitchClass(rawLabel) ?: return@mapNotNull null
             pitchClass to file
-        }.toMap()
+        }.groupBy({ it.first }, { it.second })
 
-        if (rootFileByPitchClass.size < 6) return emptyList()
+        if (rootFilesByPitchClass.size < 6) return emptyList()
 
-        val availableKeys = rootFileByPitchClass.keys.sorted()
+        val availableKeys = rootFilesByPitchClass.keys.sorted()
 
         return availableKeys.flatMap { keyPc ->
             progressionTemplates.mapNotNull { template ->
                 val sequenceFiles = template.degrees.mapNotNull { degree ->
                     val offset = majorScaleOffsets.getOrNull(degree - 1) ?: return@mapNotNull null
                     val chordPc = mod12(keyPc + offset)
-                    rootFileByPitchClass[chordPc]
+                    rootFilesByPitchClass[chordPc]?.randomOrNull()
                 }
 
                 if (sequenceFiles.size != template.degrees.size) {
                     null
                 } else {
-                    val keyName = prettifyLabel(rootFileByPitchClass[keyPc]?.substringBeforeLast('.') ?: "Key")
+                    val keyName = prettifyLabel(
+                        normalizeLabel(rootFilesByPitchClass[keyPc]?.firstOrNull()?.substringBeforeLast('.') ?: "Key")
+                    )
                     val allChoices = progressionTemplates
                         .filter { it.difficulty <= template.difficulty }
                         .map { it.label }
@@ -130,7 +132,7 @@ object AssetQuestionBank {
         if (files.isEmpty()) return emptyList()
 
         val labelsByFile = files.associateWith { file ->
-            file.substringBeforeLast('.').trim()
+            normalizeLabel(file.substringBeforeLast('.').trim())
         }
 
         val labels = labelsByFile.values
@@ -160,25 +162,25 @@ object AssetQuestionBank {
 
         if (files.size < 3) return emptyList()
 
-        val noteByPitchClass = files.mapNotNull { file ->
+        val noteFilesByPitchClass = files.mapNotNull { file ->
             val baseName = file.substringBeforeLast('.').trim()
             val pitchClass = parsePitchClass(baseName) ?: return@mapNotNull null
             pitchClass to file
-        }.toMap()
+        }.groupBy({ it.first }, { it.second })
 
-        if (noteByPitchClass.size < 3) return emptyList()
+        if (noteFilesByPitchClass.size < 3) return emptyList()
 
         val labelsByDifficulty = intervalTemplates
             .groupBy { it.difficulty }
             .mapValues { (_, templates) -> templates.map { it.label }.distinct() }
 
-        val roots = noteByPitchClass.keys.sorted()
+        val roots = noteFilesByPitchClass.keys.sorted()
 
         return roots.flatMap { rootPc ->
             intervalTemplates.mapNotNull { template ->
                 val upperPc = mod12(rootPc + template.semitones)
-                val rootFile = noteByPitchClass[rootPc] ?: return@mapNotNull null
-                val upperFile = noteByPitchClass[upperPc] ?: return@mapNotNull null
+                val rootFile = noteFilesByPitchClass[rootPc]?.randomOrNull() ?: return@mapNotNull null
+                val upperFile = noteFilesByPitchClass[upperPc]?.randomOrNull() ?: return@mapNotNull null
                 val unlockedLabels = labelsByDifficulty
                     .filterKeys { it <= template.difficulty }
                     .values
@@ -246,7 +248,7 @@ object AssetQuestionBank {
     }
 
     private fun parsePitchClass(label: String): Int? {
-        val trimmed = label.trim()
+        val trimmed = normalizeLabel(label)
         val regex = Regex("^([A-Ga-g])([#b]?)$")
         val match = regex.matchEntire(trimmed) ?: return null
         val base = when (match.groupValues[1].uppercase(Locale.ROOT)) {
@@ -268,8 +270,9 @@ object AssetQuestionBank {
     }
 
     private fun parseChordFileName(name: String): Pair<String, String>? {
+        val normalizedName = normalizeLabel(name)
         val regex = Regex("^([A-Ga-g](?:#|b)?)(.*)$")
-        val match = regex.matchEntire(name.trim()) ?: return null
+        val match = regex.matchEntire(normalizedName) ?: return null
         val root = match.groupValues[1]
         val quality = match.groupValues[2]
             .trim()
@@ -307,5 +310,9 @@ object AssetQuestionBank {
             .split(' ')
             .filter { it.isNotBlank() }
             .joinToString(" ") { token -> token.replaceFirstChar { it.titlecase(Locale.ROOT) } }
+    }
+
+    private fun normalizeLabel(raw: String): String {
+        return raw.trim().replace(Regex("\\s+\\d+$"), "")
     }
 }
