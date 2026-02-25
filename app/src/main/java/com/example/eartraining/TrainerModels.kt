@@ -150,7 +150,7 @@ object StarterQuestionBank {
             mode = TrainingMode.CHORD_TYPE,
             prompt = "Identify the chord type",
             audioResName = "chord_major",
-            choices = listOf("Major", "Minor", "Diminished", "Sus2", "Sus4", "7th"),
+            choices = listOf("Major", "Minor", "Diminished", "Augmented", "Sus2", "Sus4", "7th"),
             correctAnswer = "Major"
         ),
         TrainingQuestion(
@@ -158,7 +158,7 @@ object StarterQuestionBank {
             mode = TrainingMode.CHORD_TYPE,
             prompt = "Identify the chord type",
             audioResName = "chord_minor",
-            choices = listOf("Major", "Minor", "Diminished", "Sus2", "Sus4", "7th"),
+            choices = listOf("Major", "Minor", "Diminished", "Augmented", "Sus2", "Sus4", "7th"),
             correctAnswer = "Minor"
         ),
         TrainingQuestion(
@@ -166,7 +166,7 @@ object StarterQuestionBank {
             mode = TrainingMode.CHORD_TYPE,
             prompt = "Identify the chord type",
             audioResName = "chord_dim",
-            choices = listOf("Major", "Minor", "Diminished", "Sus2", "Sus4", "7th"),
+            choices = listOf("Major", "Minor", "Diminished", "Augmented", "Sus2", "Sus4", "7th"),
             correctAnswer = "Diminished"
         ),
         TrainingQuestion(
@@ -174,7 +174,7 @@ object StarterQuestionBank {
             mode = TrainingMode.CHORD_TYPE,
             prompt = "Identify the chord type",
             audioResName = "chord_sus2",
-            choices = listOf("Major", "Minor", "Diminished", "Sus2", "Sus4", "7th"),
+            choices = listOf("Major", "Minor", "Diminished", "Augmented", "Sus2", "Sus4", "7th"),
             correctAnswer = "Sus2"
         ),
         TrainingQuestion(
@@ -182,7 +182,7 @@ object StarterQuestionBank {
             mode = TrainingMode.CHORD_TYPE,
             prompt = "Identify the chord type",
             audioResName = "chord_sus4",
-            choices = listOf("Major", "Minor", "Diminished", "Sus2", "Sus4", "7th"),
+            choices = listOf("Major", "Minor", "Diminished", "Augmented", "Sus2", "Sus4", "7th"),
             correctAnswer = "Sus4"
         ),
         TrainingQuestion(
@@ -190,7 +190,7 @@ object StarterQuestionBank {
             mode = TrainingMode.CHORD_TYPE,
             prompt = "Identify the chord type",
             audioResName = "chord_7th",
-            choices = listOf("Major", "Minor", "Diminished", "Sus2", "Sus4", "7th"),
+            choices = listOf("Major", "Minor", "Diminished", "Augmented", "Sus2", "Sus4", "7th"),
             correctAnswer = "7th"
         )
     )

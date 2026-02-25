@@ -25,14 +25,23 @@ object AssetQuestionBank {
         // Easy
         ProgressionTemplate("1_4_5_1", "I-IV-V-I", listOf(1, 4, 5, 1), difficulty = 1),
         ProgressionTemplate("1_5_1_1", "I-V-I-I", listOf(1, 5, 1, 1), difficulty = 1),
+        ProgressionTemplate("1_6_4_5", "I-vi-IV-V", listOf(1, 6, 4, 5), difficulty = 1),
+        ProgressionTemplate("1_4_1_5", "I-IV-I-V", listOf(1, 4, 1, 5), difficulty = 1),
 
         // Medium
         ProgressionTemplate("1_5_6_4", "I-V-vi-IV", listOf(1, 5, 6, 4), difficulty = 2),
         ProgressionTemplate("6_4_1_5", "vi-IV-I-V", listOf(6, 4, 1, 5), difficulty = 2),
+        ProgressionTemplate("1_5_4_6", "I-V-IV-vi", listOf(1, 5, 4, 6), difficulty = 2),
+        ProgressionTemplate("1_3_4_5", "I-iii-IV-V", listOf(1, 3, 4, 5), difficulty = 2),
+        ProgressionTemplate("4_1_5_6", "IV-I-V-vi", listOf(4, 1, 5, 6), difficulty = 2),
 
         // Harder
         ProgressionTemplate("2_5_1_1", "ii-V-I-I", listOf(2, 5, 1, 1), difficulty = 3),
-        ProgressionTemplate("1_6_2_5", "I-vi-ii-V", listOf(1, 6, 2, 5), difficulty = 3)
+        ProgressionTemplate("1_6_2_5", "I-vi-ii-V", listOf(1, 6, 2, 5), difficulty = 3),
+        ProgressionTemplate("3_6_2_5", "iii-vi-ii-V", listOf(3, 6, 2, 5), difficulty = 3),
+        ProgressionTemplate("6_2_5_1", "vi-ii-V-I", listOf(6, 2, 5, 1), difficulty = 3),
+        ProgressionTemplate("1_2_5_1", "I-ii-V-I", listOf(1, 2, 5, 1), difficulty = 3),
+        ProgressionTemplate("1_4_2_5", "I-IV-ii-V", listOf(1, 4, 2, 5), difficulty = 3)
     )
 
 
@@ -295,6 +304,7 @@ object AssetQuestionBank {
             "sus2" -> "Sus2"
             "sus4" -> "Sus4"
             "dim", "diminished" -> "Diminished"
+            "aug", "augmented", "+" -> "Augmented"
             "7", "7th", "dom7", "dominant7" -> "7th"
             else -> null
         }
@@ -304,7 +314,7 @@ object AssetQuestionBank {
         return when (quality) {
             "Major", "Minor" -> 1
             "Sus2", "Sus4", "7th" -> 2
-            "Diminished" -> 3
+            "Diminished", "Augmented" -> 3
             else -> 1
         }
     }
