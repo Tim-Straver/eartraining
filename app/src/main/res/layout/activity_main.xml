@@ -70,27 +70,36 @@
         android:orientation="vertical"
         android:visibility="visible">
 
-        <TextView
-            android:id="@+id/questionLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="86dp"
-            android:gravity="center"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/playAudioButton"
-            style="@style/Widget.AppCompat.Button.Borderless"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:text="@string/play_audio"
-            android:textSize="80sp"
-            android:textStyle="bold" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/questionLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="86dp"
+                android:gravity="center"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/playAudioButton"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:minHeight="50dp"
+                android:text="@string/play_audio"
+                android:textSize="80sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/streakContainer"
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_marginTop="16dp"
@@ -99,7 +108,7 @@
             android:orientation="vertical">
 
             <TextView
-            android:id="@+id/streakFireLabel"
+                android:id="@+id/streakFireLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/streak_fire"
@@ -126,7 +135,7 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_gravity="bottom"
             android:fillViewport="true">
 
             <LinearLayout
@@ -139,16 +148,22 @@
                 android:paddingBottom="12dp" />
         </ScrollView>
 
-        <Button
-            android:id="@+id/nextQuestionButton"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="6dp"
-            android:backgroundTint="@color/accent"
-            android:minHeight="72dp"
-            android:text="@string/next_question"
-            android:textColor="@color/on_accent"
-            android:textSize="22sp" />
+            android:background="#00FFFFFF">
+
+            <Button
+                android:id="@+id/nextQuestionButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="6dp"
+                android:backgroundTint="@color/accent"
+                android:minHeight="72dp"
+                android:text="@string/next_question"
+                android:textColor="@color/on_accent"
+                android:textSize="22sp" />
+        </com.google.android.material.bottomnavigation.BottomNavigationView>
     </LinearLayout>
 </LinearLayout>
