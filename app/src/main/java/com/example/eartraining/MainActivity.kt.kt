@@ -338,24 +338,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun progressionUnlockedDifficulty(): Int {
-        val progressionStats = stats.filterKeys { id -> id.startsWith("asset_prog_") }.values
-        val totalCorrect = progressionStats.sumOf { st -> st.attempts - st.totalWrong }
-        val baseLevel = 1 + (totalCorrect / 5)
-        return baseLevel.coerceIn(1, AssetQuestionBank.maxProgressionDifficulty())
+        return adaptiveUnlockedDifficulty(
+            idPrefix = "asset_prog_",
+            correctAnswersPerLevel = 5,
+            maxDifficulty = AssetQuestionBank.maxProgressionDifficulty()
+        )
     }
 
     private fun chordTypeUnlockedDifficulty(): Int {
-        val chordTypeStats = stats.filterKeys { id -> id.startsWith("asset_chords_") }.values
-        val totalCorrect = chordTypeStats.sumOf { st -> st.attempts - st.totalWrong }
-        val baseLevel = 1 + (totalCorrect / 6)
-        return baseLevel.coerceIn(1, AssetQuestionBank.maxChordTypeDifficulty())
+        return adaptiveUnlockedDifficulty(
+            idPrefix = "asset_chords_",
+            correctAnswersPerLevel = 6,
+            maxDifficulty = AssetQuestionBank.maxChordTypeDifficulty()
+        )
     }
 
     private fun intervalUnlockedDifficulty(): Int {
-        val intervalStats = stats.filterKeys { id -> id.startsWith("asset_interval_") }.values
-        val totalCorrect = intervalStats.sumOf { st -> st.attempts - st.totalWrong }
-        val baseLevel = 1 + (totalCorrect / 6)
-        return baseLevel.coerceIn(1, AssetQuestionBank.maxIntervalDifficulty())
+        return adaptiveUnlockedDifficulty(
+            idPrefix = "asset_interval_",
+            correctAnswersPerLevel = 6,
+            maxDifficulty = AssetQuestionBank.maxIntervalDifficulty()
+        )
+    }
+
+    private fun adaptiveUnlockedDifficulty(
+        idPrefix: String,
+        correctAnswersPerLevel: Int,
+        maxDifficulty: Int
+    ): Int {
+        val modeStats = stats.filterKeys { id -> id.startsWith(idPrefix) }.values
+        val totalCorrect = modeStats.sumOf { st -> st.attempts - st.totalWrong }
+        val totalWrong = modeStats.sumOf { st -> st.totalWrong }
+
+        // Positive streaks move difficulty up quickly. Repeated mistakes push it down.
+        val streakBonus = modeStats.sumOf { st -> st.correctStreak }
+        val streakPenalty = modeStats.sumOf { st -> st.wrongStreak * 2 }
+
+        val performanceScore = (totalCorrect * 2) + streakBonus - (totalWrong * 3) - streakPenalty
+        val normalizedScore = performanceScore.coerceAtLeast(0)
+        val baseLevel = 1 + (normalizedScore / correctAnswersPerLevel)
+        return baseLevel.coerceIn(1, maxDifficulty)
     }
 
     override fun onDestroy() {
