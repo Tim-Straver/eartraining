@@ -346,9 +346,22 @@ class MainActivity : AppCompatActivity() {
         playNext()
     }
 
+    private fun chordTypeUsesAssetQuestions(): Boolean {
+        return AssetQuestionBank.questionsForMode(this, TrainingMode.CHORD_TYPE).isNotEmpty()
+    }
+
+    private fun chordTypeIdPrefixes(): List<String> {
+        return if (chordTypeUsesAssetQuestions()) {
+            listOf("asset_chords_")
+        } else {
+            listOf("chord_")
+        }
+    }
+
     private fun hasChordTypeProgress(): Boolean {
+        val prefixes = chordTypeIdPrefixes()
         return stats.any { (id, questionStats) ->
-            (id.startsWith("asset_chords_") || id.startsWith("chord_")) && questionStats.attempts > 0
+            prefixes.any { prefix -> id.startsWith(prefix) } && questionStats.attempts > 0
         }
     }
 
@@ -362,7 +375,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun chordTypeUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
-            idPrefixes = listOf("asset_chords_", "chord_"),
+            idPrefixes = chordTypeIdPrefixes(),
             correctAnswersPerLevel = 6,
             maxDifficulty = AssetQuestionBank.maxChordTypeDifficulty()
         )
