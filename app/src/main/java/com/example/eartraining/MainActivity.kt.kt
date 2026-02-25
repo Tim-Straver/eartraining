@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.modeChordProgressionButton).setOnClickListener { startMode(TrainingMode.CHORD_PROGRESSION) }
         findViewById<Button>(R.id.modeIntervalButton).setOnClickListener { startMode(TrainingMode.INTERVAL) }
         findViewById<Button>(R.id.modeChordTypeButton).setOnClickListener { startMode(TrainingMode.CHORD_TYPE) }
+        findViewById<Button>(R.id.resetProgressionButton).setOnClickListener { resetProgression() }
         findViewById<Button>(R.id.playAudioButton).setOnClickListener { playCurrentAudio() }
         nextQuestionButton.setOnClickListener {
             if (nextQuestionButton.isEnabled) {
@@ -77,6 +78,12 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun resetProgression() {
+        stats.clear()
+        statsStore.save(stats)
+        Toast.makeText(this, R.string.reset_progression_done, Toast.LENGTH_SHORT).show()
+    }
+
     private fun showHome() {
         homeContainer.visibility = LinearLayout.VISIBLE
         trainingContainer.visibility = LinearLayout.GONE
@@ -89,7 +96,6 @@ class MainActivity : AppCompatActivity() {
         currentMode = mode
         currentStreak = 0
         updateStreakLabel()
-        updateDifficultyLabel()
         homeContainer.visibility = LinearLayout.GONE
         trainingContainer.visibility = LinearLayout.VISIBLE
         loadNewQuestion()

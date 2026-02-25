@@ -55,6 +55,15 @@
             android:text="@string/mode_chord_type"
             android:textSize="36sp"
             android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/resetProgressionButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:minHeight="64dp"
+            android:text="@string/reset_progression"
+            android:textSize="22sp" />
     </LinearLayout>
 
     <LinearLayout

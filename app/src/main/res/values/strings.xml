@@ -15,5 +15,7 @@
     <string name="streak_fire">🔥</string>
     <string name="streak_label_default">0 streak</string>
     <string name="difficulty_label">Difficulty: %1$.2f</string>
+    <string name="reset_progression">Reset Progression</string>
+    <string name="reset_progression_done">Progression reset.</string>
     <string name="back">⬅ Back to Home</string>
 </resources>
