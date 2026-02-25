@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var homeContainer: LinearLayout
     private lateinit var trainingContainer: LinearLayout
-    private lateinit var modeTitleLabel: TextView
     private lateinit var questionLabel: TextView
     private lateinit var answerGroup: LinearLayout
     private lateinit var streakFireLabel: TextView
@@ -46,7 +45,6 @@ class MainActivity : AppCompatActivity() {
 
         homeContainer = findViewById(R.id.homeContainer)
         trainingContainer = findViewById(R.id.trainingContainer)
-        modeTitleLabel = findViewById(R.id.modeTitleLabel)
         questionLabel = findViewById(R.id.questionLabel)
         answerGroup = findViewById(R.id.answerGroup)
         streakFireLabel = findViewById(R.id.streakFireLabel)
@@ -86,7 +84,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun startMode(mode: TrainingMode) {
         currentMode = mode
-        modeTitleLabel.text = mode.displayName
         currentStreak = 0
         updateStreakLabel()
         homeContainer.visibility = LinearLayout.GONE
@@ -102,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                     val unlockedDifficulty = progressionUnlockedDifficulty()
                     assetQuestions.filter { it.difficulty <= unlockedDifficulty }
                 } else {
-                    StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
+                    emptyList()
                 }
             }
             TrainingMode.CHORD_TYPE -> {
