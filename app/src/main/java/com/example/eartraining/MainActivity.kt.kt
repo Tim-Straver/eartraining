@@ -13,6 +13,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
 import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
@@ -143,6 +144,8 @@ class MainActivity : AppCompatActivity() {
         nextQuestionButton.isEnabled = false
 
         val displayedChoices = normalizedChoices(question)
+        val accentColor = ContextCompat.getColor(this, R.color.accent)
+        val onAccentColor = ContextCompat.getColor(this, R.color.on_accent)
         displayedChoices.forEach { choice ->
             val button = Button(this).apply {
                 text = choice
@@ -150,6 +153,8 @@ class MainActivity : AppCompatActivity() {
                 minHeight = 160
                 isAllCaps = false
                 tag = choice
+                backgroundTintList = ColorStateList.valueOf(accentColor)
+                setTextColor(onAccentColor)
                 setOnClickListener {
                     if (!nextQuestionButton.isEnabled) {
                         submitAnswer(choice, this)
