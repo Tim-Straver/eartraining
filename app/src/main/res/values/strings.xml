@@ -14,5 +14,6 @@
     <string name="no_questions">No questions available for this mode.</string>
     <string name="streak_fire">🔥</string>
     <string name="streak_label_default">0 streak</string>
+    <string name="difficulty_label">Difficulty: %1$.1f</string>
     <string name="back">⬅ Back to Home</string>
 </resources>

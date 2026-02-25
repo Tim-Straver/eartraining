@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var answerGroup: LinearLayout
     private lateinit var streakFireLabel: TextView
     private lateinit var streakLabel: TextView
+    private lateinit var difficultyLabel: TextView
     private lateinit var nextQuestionButton: Button
 
     private var currentQuestion: TrainingQuestion? = null
@@ -49,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         answerGroup = findViewById(R.id.answerGroup)
         streakFireLabel = findViewById(R.id.streakFireLabel)
         streakLabel = findViewById(R.id.streakLabel)
+        difficultyLabel = findViewById(R.id.difficultyLabel)
         nextQuestionButton = findViewById(R.id.nextQuestionButton)
 
         findViewById<Button>(R.id.modeChordProgressionButton).setOnClickListener { startMode(TrainingMode.CHORD_PROGRESSION) }
@@ -79,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         homeContainer.visibility = LinearLayout.VISIBLE
         trainingContainer.visibility = LinearLayout.GONE
         currentQuestion = null
+        difficultyLabel.text = ""
         nextQuestionButton.isEnabled = false
     }
 
@@ -86,18 +89,21 @@ class MainActivity : AppCompatActivity() {
         currentMode = mode
         currentStreak = 0
         updateStreakLabel()
+        updateDifficultyLabel()
         homeContainer.visibility = LinearLayout.GONE
         trainingContainer.visibility = LinearLayout.VISIBLE
         loadNewQuestion()
     }
 
     private fun loadNewQuestion() {
+        val unlockedDifficulty = currentUnlockedDifficulty()
+        updateDifficultyLabel(unlockedDifficulty)
+
         val questions = when (currentMode) {
             TrainingMode.CHORD_PROGRESSION -> {
                 val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
                 if (assetQuestions.isNotEmpty()) {
-                    val unlockedDifficulty = progressionUnlockedDifficulty()
-                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                    assetQuestions.filter { it.difficulty.toFloat() <= unlockedDifficulty }
                 } else {
                     emptyList()
                 }
@@ -105,8 +111,7 @@ class MainActivity : AppCompatActivity() {
             TrainingMode.CHORD_TYPE -> {
                 val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
                 if (assetQuestions.isNotEmpty()) {
-                    val unlockedDifficulty = chordTypeUnlockedDifficulty()
-                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                    assetQuestions.filter { it.difficulty.toFloat() <= unlockedDifficulty }
                 } else {
                     StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
                 }
@@ -114,8 +119,7 @@ class MainActivity : AppCompatActivity() {
             TrainingMode.INTERVAL -> {
                 val assetQuestions = AssetQuestionBank.questionsForMode(this, currentMode)
                 if (assetQuestions.isNotEmpty()) {
-                    val unlockedDifficulty = intervalUnlockedDifficulty()
-                    assetQuestions.filter { it.difficulty <= unlockedDifficulty }
+                    assetQuestions.filter { it.difficulty.toFloat() <= unlockedDifficulty }
                 } else {
                     StarterQuestionBank.allQuestions.filter { it.mode == currentMode }
                 }
@@ -208,6 +212,7 @@ class MainActivity : AppCompatActivity() {
 
         currentStreak = if (correct) currentStreak + 1 else 0
         updateStreakLabel()
+        updateDifficultyLabel()
 
         highlightAnswers(selectedButton, question.correctAnswer, correct)
 
@@ -337,7 +342,7 @@ class MainActivity : AppCompatActivity() {
         playNext()
     }
 
-    private fun progressionUnlockedDifficulty(): Int {
+    private fun progressionUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
             idPrefix = "asset_prog_",
             correctAnswersPerLevel = 5,
@@ -345,7 +350,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun chordTypeUnlockedDifficulty(): Int {
+    private fun chordTypeUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
             idPrefix = "asset_chords_",
             correctAnswersPerLevel = 6,
@@ -353,7 +358,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun intervalUnlockedDifficulty(): Int {
+    private fun intervalUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
             idPrefix = "asset_interval_",
             correctAnswersPerLevel = 6,
@@ -365,7 +370,7 @@ class MainActivity : AppCompatActivity() {
         idPrefix: String,
         correctAnswersPerLevel: Int,
         maxDifficulty: Int
-    ): Int {
+    ): Float {
         val modeStats = stats.filterKeys { id -> id.startsWith(idPrefix) }.values
         val totalCorrect = modeStats.sumOf { st -> st.attempts - st.totalWrong }
         val totalWrong = modeStats.sumOf { st -> st.totalWrong }
@@ -376,8 +381,21 @@ class MainActivity : AppCompatActivity() {
 
         val performanceScore = (totalCorrect * 2) + streakBonus - (totalWrong * 3) - streakPenalty
         val normalizedScore = performanceScore.coerceAtLeast(0)
-        val baseLevel = 1 + (normalizedScore / correctAnswersPerLevel)
-        return baseLevel.coerceIn(1, maxDifficulty)
+        val baseLevel = 1f + (normalizedScore.toFloat() / correctAnswersPerLevel.toFloat())
+        return baseLevel.coerceIn(1f, maxDifficulty.toFloat())
+    }
+
+    private fun currentUnlockedDifficulty(): Float {
+        return when (currentMode) {
+            TrainingMode.CHORD_PROGRESSION -> progressionUnlockedDifficulty()
+            TrainingMode.CHORD_TYPE -> chordTypeUnlockedDifficulty()
+            TrainingMode.INTERVAL -> intervalUnlockedDifficulty()
+            else -> 1f
+        }
+    }
+
+    private fun updateDifficultyLabel(level: Float = currentUnlockedDifficulty()) {
+        difficultyLabel.text = getString(R.string.difficulty_label, level)
     }
 
     override fun onDestroy() {
