@@ -7,4 +7,13 @@
     <color name="accent_variant">#7C3AED</color>
     <color name="on_dark">#F9FAFB</color>
     <color name="on_accent">#FFFFFF</color>
+    <color name="teal">#001219</color>
+    <color name="cyan">#005F73</color>
+    <color name="aqua">#0A9396</color>
+    <color name="wheat">#94D2BD</color>
+    <color name="orange">#E9D8A6</color>
+    <color name="caramel">#EE9B00</color>
+    <color name="rust">#CA6702</color>
+    <color name="iron">#AE2012</color>
+    <color name="red">#9B2226</color>
 </resources>
