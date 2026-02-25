@@ -13,6 +13,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
 import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
@@ -149,6 +150,8 @@ class MainActivity : AppCompatActivity() {
                 textSize = 26f
                 minHeight = 160
                 isAllCaps = false
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.accent))
+                setTextColor(ContextCompat.getColor(context, R.color.on_accent))
                 tag = choice
                 setOnClickListener {
                     if (!nextQuestionButton.isEnabled) {
@@ -215,8 +218,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun highlightAnswers(selectedButton: Button, correctAnswer: String, isSelectedCorrect: Boolean) {
-        val correctColor = getColor(android.R.color.holo_green_dark)
-        val wrongColor = getColor(android.R.color.holo_red_dark)
+        val correctColor = ContextCompat.getColor(this, R.color.cyan)
+        val wrongColor = ContextCompat.getColor(this, R.color.dark_red)
 
         answerButtons.forEach { button ->
             button.isClickable = false

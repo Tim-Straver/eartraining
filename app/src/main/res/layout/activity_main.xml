@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/bg_dark">
 
     <LinearLayout
         android:id="@+id/homeContainer"
@@ -30,8 +31,10 @@
             android:layout_height="0dp"
             android:layout_marginBottom="12dp"
             android:layout_weight="1"
+            android:backgroundTint="@color/accent"
             android:minHeight="84dp"
             android:text="@string/mode_chord_progression"
+            android:textColor="@color/on_accent"
             android:textSize="36sp"
             android:textStyle="bold" />
 
@@ -41,8 +44,10 @@
             android:layout_height="0dp"
             android:layout_marginBottom="12dp"
             android:layout_weight="1"
+            android:backgroundTint="@color/accent"
             android:minHeight="84dp"
             android:text="@string/mode_interval"
+            android:textColor="@color/on_accent"
             android:textSize="36sp"
             android:textStyle="bold" />
 
@@ -51,8 +56,10 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:backgroundTint="@color/accent"
             android:minHeight="84dp"
             android:text="@string/mode_chord_type"
+            android:textColor="@color/on_accent"
             android:textSize="36sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -70,6 +77,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="86dp"
             android:gravity="center"
+            android:textColor="@color/on_dark"
             android:textSize="22sp"
             android:textStyle="bold" />
 
@@ -81,6 +89,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
             android:text="@string/play_audio"
+            android:textColor="@color/on_dark"
             android:textSize="80sp"
             android:textStyle="bold" />
 
@@ -98,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/streak_fire"
                 android:textAlignment="center"
-                android:textColor="@android:color/white"
+                android:textColor="@color/on_dark"
                 android:textSize="42sp"
                 android:textStyle="bold"
                 android:visibility="visible" />
@@ -110,7 +119,7 @@
                 android:gravity="center"
                 android:text="@string/streak_label_default"
                 android:textAlignment="center"
-                android:textColor="@android:color/white"
+                android:textColor="@color/on_dark"
                 android:textSize="30sp"
                 android:textStyle="bold"
                 android:visibility="visible" />
@@ -139,8 +148,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="6dp"
+            android:backgroundTint="@color/accent"
             android:minHeight="72dp"
             android:text="@string/next_question"
+            android:textColor="@color/on_accent"
             android:textSize="22sp" />
     </LinearLayout>
 </LinearLayout>

@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_dark">#111827</color>
-    <color name="bg_surface">#1F2937</color>
-    <color name="primary">#8B5CF6</color>
-    <color name="accent">#8B5CF6</color>
-    <color name="accent_variant">#7C3AED</color>
-    <color name="on_dark">#F9FAFB</color>
-    <color name="on_accent">#FFFFFF</color>
-    <color name="teal">#001219</color>
-    <color name="cyan">#005F73</color>
-    <color name="aqua">#0A9396</color>
-    <color name="wheat">#94D2BD</color>
-    <color name="orange">#E9D8A6</color>
-    <color name="caramel">#EE9B00</color>
-    <color name="rust">#CA6702</color>
-    <color name="iron">#AE2012</color>
-    <color name="red">#9B2226</color>
+    <!-- Palette -->
+    <color name="ink">#001219</color>
+    <color name="teal">#005F73</color>
+    <color name="cyan">#0A9396</color>
+    <color name="aqua">#94D2BD</color>
+    <color name="wheat">#E9D8A6</color>
+    <color name="orange">#EE9B00</color>
+    <color name="caramel">#CA6702</color>
+    <color name="rust">#BB3E03</color>
+    <color name="oxidized_iron">#AE2012</color>
+    <color name="dark_red">#9B2226</color>
+
+    <!-- Semantic app tokens -->
+    <color name="bg_dark">@color/ink</color>
+    <color name="bg_surface">@color/teal</color>
+    <color name="primary">@color/cyan</color>
+    <color name="accent">@color/wheat</color>
+    <color name="accent_variant">@color/orange</color>
+    <color name="on_dark">@color/wheat</color>
+    <color name="on_accent">@color/ink</color>
 </resources>
