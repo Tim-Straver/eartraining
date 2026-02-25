@@ -96,7 +96,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadNewQuestion() {
-        val unlockedDifficulty = currentUnlockedDifficulty()
+        val unlockedDifficulty = if (currentMode == TrainingMode.CHORD_TYPE && !hasChordTypeProgress()) {
+            1f
+        } else {
+            currentUnlockedDifficulty()
+        }
         updateDifficultyLabel(unlockedDifficulty)
 
         val questions = when (currentMode) {
@@ -342,9 +346,15 @@ class MainActivity : AppCompatActivity() {
         playNext()
     }
 
+    private fun hasChordTypeProgress(): Boolean {
+        return stats.any { (id, questionStats) ->
+            (id.startsWith("asset_chords_") || id.startsWith("chord_")) && questionStats.attempts > 0
+        }
+    }
+
     private fun progressionUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
-            idPrefix = "asset_prog_",
+            idPrefixes = listOf("asset_prog_"),
             correctAnswersPerLevel = 5,
             maxDifficulty = AssetQuestionBank.maxProgressionDifficulty()
         )
@@ -352,7 +362,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun chordTypeUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
-            idPrefix = "asset_chords_",
+            idPrefixes = listOf("asset_chords_", "chord_"),
             correctAnswersPerLevel = 6,
             maxDifficulty = AssetQuestionBank.maxChordTypeDifficulty()
         )
@@ -360,18 +370,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun intervalUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
-            idPrefix = "asset_interval_",
+            idPrefixes = listOf("asset_interval_"),
             correctAnswersPerLevel = 6,
             maxDifficulty = AssetQuestionBank.maxIntervalDifficulty()
         )
     }
 
     private fun adaptiveUnlockedDifficulty(
-        idPrefix: String,
+        idPrefixes: List<String>,
         correctAnswersPerLevel: Int,
         maxDifficulty: Int
     ): Float {
-        val modeStats = stats.filterKeys { id -> id.startsWith(idPrefix) }.values
+        val modeStats = stats.filterKeys { id -> idPrefixes.any { prefix -> id.startsWith(prefix) } }.values
         val totalCorrect = modeStats.sumOf { st -> st.attempts - st.totalWrong }
         val totalWrong = modeStats.sumOf { st -> st.totalWrong }
 
