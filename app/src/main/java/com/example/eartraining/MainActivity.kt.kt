@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.modeChordProgressionButton).setOnClickListener { startMode(TrainingMode.CHORD_PROGRESSION) }
         findViewById<Button>(R.id.modeIntervalButton).setOnClickListener { startMode(TrainingMode.INTERVAL) }
         findViewById<Button>(R.id.modeChordTypeButton).setOnClickListener { startMode(TrainingMode.CHORD_TYPE) }
+        findViewById<Button>(R.id.resetProgressionButton).setOnClickListener { resetProgression() }
         findViewById<Button>(R.id.playAudioButton).setOnClickListener { playCurrentAudio() }
         nextQuestionButton.setOnClickListener {
             if (nextQuestionButton.isEnabled) {
@@ -77,6 +78,12 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun resetProgression() {
+        stats.clear()
+        statsStore.save(stats)
+        Toast.makeText(this, R.string.reset_progression_done, Toast.LENGTH_SHORT).show()
+    }
+
     private fun showHome() {
         homeContainer.visibility = LinearLayout.VISIBLE
         trainingContainer.visibility = LinearLayout.GONE
@@ -89,14 +96,17 @@ class MainActivity : AppCompatActivity() {
         currentMode = mode
         currentStreak = 0
         updateStreakLabel()
-        updateDifficultyLabel()
         homeContainer.visibility = LinearLayout.GONE
         trainingContainer.visibility = LinearLayout.VISIBLE
         loadNewQuestion()
     }
 
     private fun loadNewQuestion() {
-        val unlockedDifficulty = currentUnlockedDifficulty()
+        val unlockedDifficulty = if (currentMode == TrainingMode.CHORD_TYPE && !hasChordTypeProgress()) {
+            1f
+        } else {
+            currentUnlockedDifficulty()
+        }
         updateDifficultyLabel(unlockedDifficulty)
 
         val questions = when (currentMode) {
@@ -342,9 +352,28 @@ class MainActivity : AppCompatActivity() {
         playNext()
     }
 
+    private fun chordTypeUsesAssetQuestions(): Boolean {
+        return AssetQuestionBank.questionsForMode(this, TrainingMode.CHORD_TYPE).isNotEmpty()
+    }
+
+    private fun chordTypeIdPrefixes(): List<String> {
+        return if (chordTypeUsesAssetQuestions()) {
+            listOf("asset_chords_")
+        } else {
+            listOf("chord_")
+        }
+    }
+
+    private fun hasChordTypeProgress(): Boolean {
+        val prefixes = chordTypeIdPrefixes()
+        return stats.any { (id, questionStats) ->
+            prefixes.any { prefix -> id.startsWith(prefix) } && questionStats.attempts > 0
+        }
+    }
+
     private fun progressionUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
-            idPrefix = "asset_prog_",
+            idPrefixes = listOf("asset_prog_"),
             correctAnswersPerLevel = 5,
             maxDifficulty = AssetQuestionBank.maxProgressionDifficulty()
         )
@@ -352,7 +381,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun chordTypeUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
-            idPrefix = "asset_chords_",
+            idPrefixes = chordTypeIdPrefixes(),
             correctAnswersPerLevel = 6,
             maxDifficulty = AssetQuestionBank.maxChordTypeDifficulty()
         )
@@ -360,18 +389,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun intervalUnlockedDifficulty(): Float {
         return adaptiveUnlockedDifficulty(
-            idPrefix = "asset_interval_",
+            idPrefixes = listOf("asset_interval_"),
             correctAnswersPerLevel = 6,
             maxDifficulty = AssetQuestionBank.maxIntervalDifficulty()
         )
     }
 
     private fun adaptiveUnlockedDifficulty(
-        idPrefix: String,
+        idPrefixes: List<String>,
         correctAnswersPerLevel: Int,
         maxDifficulty: Int
     ): Float {
-        val modeStats = stats.filterKeys { id -> id.startsWith(idPrefix) }.values
+        val modeStats = stats.filterKeys { id -> idPrefixes.any { prefix -> id.startsWith(prefix) } }.values
         val totalCorrect = modeStats.sumOf { st -> st.attempts - st.totalWrong }
         val totalWrong = modeStats.sumOf { st -> st.totalWrong }
 
